@@ -1,5 +1,9 @@
 package com.mdtalalwasim.ecommerce.service.impl;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +16,7 @@ import com.mdtalalwasim.ecommerce.entity.User;
 import com.mdtalalwasim.ecommerce.repository.UserRepository;
 import com.mdtalalwasim.ecommerce.service.UserService;
 import com.mdtalalwasim.ecommerce.utils.AppConstant;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -130,9 +135,79 @@ public class UserServiceImpl implements UserService{
 		// TODO Auto-generated method stub
 		return userRepository.save(userByToken);
 	}
-	
-	
 
-}
+	@Override
+	public void changePassword(String email, String oldPassword, String newPassword, String confirmPassword) {
+		User user = userRepository.findByEmail(email);
+
+		if (user == null) {
+			throw new RuntimeException("User not found");
+		}
+
+		if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+			throw new RuntimeException("Old password is incorrect");
+		}
+
+		if (!newPassword.equals(confirmPassword)) {
+			throw new RuntimeException("Passwords do not match");
+		}
+
+		user.setPassword(passwordEncoder.encode(newPassword));
+		userRepository.save(user);
+		}
+
+		public void updateUserProfile(User user) {
+			if (user.getId() == null) { throw new IllegalArgumentException("User ID must not be null"); }
+				User existingUser = userRepository.findById(user.getId())
+						.orElseThrow(() -> new RuntimeException("User not found"));
+
+				// Cập nhật các trường thông tin
+				existingUser.setName(user.getName());
+				existingUser.setEmail(user.getEmail());
+				existingUser.setMobile(user.getMobile());
+				existingUser.setAddress(user.getAddress());
+				existingUser.setCity(user.getCity());
+				existingUser.setState(user.getState());
+				existingUser.setPinCode(user.getPinCode());
+
+				// Mã hóa mật khẩu nếu thay đổi và mật khẩu mới không bị null
+				if (user.getPassword() != null && !user.getPassword().equals(existingUser.getPassword())) {
+					existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+				}
+
+				userRepository.save(existingUser);
+			}
+
+		public void changeProfilePicture(String email, MultipartFile file) throws IOException {
+					User user = getUserByEmail(email);
+
+					// Đường dẫn tới thư mục lưu trữ ảnh
+					Path uploadPath = Paths.get("uploads/");
+					if (!Files.exists(uploadPath)) {
+						Files.createDirectories(uploadPath);
+					}
+
+					// Lưu file ảnh vào thư mục lưu trữ
+					Path filePath = uploadPath.resolve(file.getOriginalFilename());
+					Files.write(filePath, file.getBytes());
+
+					// Cập nhật đường dẫn ảnh trong cơ sở dữ liệu
+					user.setProfileImage("/uploads/" + file.getOriginalFilename());
+					userRepository.save(user);
+				}
+
+		}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
