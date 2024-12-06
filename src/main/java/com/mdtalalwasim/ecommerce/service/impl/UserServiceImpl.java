@@ -138,25 +138,23 @@ public class UserServiceImpl implements UserService{
 
 	@Override
 	public void changePassword(String email, String oldPassword, String newPassword, String confirmPassword) {
-		User user = userRepository.findByEmail(email);
 
-		if (user == null) {
-			throw new RuntimeException("User not found");
-		}
+		User user = getUserByEmail(email);
 
 		if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-			throw new RuntimeException("Old password is incorrect");
+			throw new RuntimeException("Old password is incorrect.");
 		}
 
 		if (!newPassword.equals(confirmPassword)) {
-			throw new RuntimeException("Passwords do not match");
+			throw new RuntimeException("New password and confirm password do not match.");
 		}
 
 		user.setPassword(passwordEncoder.encode(newPassword));
 		userRepository.save(user);
-		}
+	}
 
-		public void updateUserProfile(User user) {
+
+	public void updateUserProfile(User user) {
 			if (user.getId() == null) { throw new IllegalArgumentException("User ID must not be null"); }
 				User existingUser = userRepository.findById(user.getId())
 						.orElseThrow(() -> new RuntimeException("User not found"));
@@ -182,7 +180,7 @@ public class UserServiceImpl implements UserService{
 					User user = getUserByEmail(email);
 
 					// Đường dẫn tới thư mục lưu trữ ảnh
-					Path uploadPath = Paths.get("uploads/");
+					Path uploadPath = Paths.get("uploads/profile/");
 					if (!Files.exists(uploadPath)) {
 						Files.createDirectories(uploadPath);
 					}
@@ -192,7 +190,7 @@ public class UserServiceImpl implements UserService{
 					Files.write(filePath, file.getBytes());
 
 					// Cập nhật đường dẫn ảnh trong cơ sở dữ liệu
-					user.setProfileImage("/uploads/" + file.getOriginalFilename());
+					user.setProfileImage("/uploads/profile/" + file.getOriginalFilename());
 					userRepository.save(user);
 				}
 

@@ -124,20 +124,26 @@ public class UserController {
 
 	@PostMapping("/change-password")
 	public String changePassword(
-			@RequestParam("email") String email,
 			@RequestParam("oldPassword") String oldPassword,
 			@RequestParam("newPassword") String newPassword,
 			@RequestParam("confirmPassword") String confirmPassword,
+			Principal principal,
 			RedirectAttributes redirectAttributes) {
 		try {
+
+			String email = principal.getName();
+
 			userService.changePassword(email, oldPassword, newPassword, confirmPassword);
+
 			redirectAttributes.addFlashAttribute("successMessage", "Password changed successfully.");
 			return "redirect:/signin";
 		} catch (RuntimeException e) {
+
 			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
 			return "redirect:/user/change-password";
 		}
 	}
+
 
 	@GetMapping("/profile")
 	public String viewProfile(Model model, Principal principal) {
