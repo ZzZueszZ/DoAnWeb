@@ -2,14 +2,10 @@ package com.mdtalalwasim.ecommerce.entity;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,42 +13,57 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Setter
-@Getter
-@ToString
+@Table(name = "product")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @ToString
 public class Product {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column(length = 500)
+	@Column(name = "product_title", length = 500)
 	private String productTitle;
 	
-	@Column(length = 5000)
+	@Column(name = "product_description", columnDefinition = "TEXT")
 	private String productDescription;
 	
-	private String productCategory;
+	@ManyToOne
+	@JoinColumn(name = "category_id")
+	private Category category;
 	
+	@Column(name = "product_price")
 	private Double productPrice;
 	
-	private int productStock;
+	@Column(name = "product_stock")
+	private Integer productStock;
 	
+	@Column(name = "product_image", length = 255)
 	private String productImage;
 	
-	private int discount;
+	private Integer discount;
 	
+	@Column(name = "discount_price")
 	private Double discountPrice;
 	
+	@Column(name = "discount_start_date")
+	private LocalDateTime discountStartDate;
+	
+	@Column(name = "discount_end_date")
+	private LocalDateTime discountEndDate;
+	
+	@Column(name = "is_discount_active", columnDefinition = "TINYINT(1) DEFAULT 0")
+	private Boolean isDiscountActive;
+	
+	@Column(name = "is_active", columnDefinition = "TINYINT(1) DEFAULT 1")
 	private Boolean isActive;
 	
 	@CreationTimestamp
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
+	@Column(name = "created_at", updatable = false)
+	private LocalDateTime createdAt;
+	
+	@UpdateTimestamp
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
 	
 	
 }

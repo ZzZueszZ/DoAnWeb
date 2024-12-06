@@ -227,31 +227,49 @@ public class AdminViewController {
 	@GetMapping("/add-product")
 	public String addProduct(Model model) {
 		List<Category> allCategories = categoryService.getAllCategories();
-		model.addAttribute("allCategoryList",allCategories);
-		return "/admin/product/add-product";
+		model.addAttribute("categories", allCategories);
+		return "admin/product/add-product";
 	}
 	
 
 	
 	@PostMapping("/save-product")
-	public String saveProduct(@ModelAttribute Product product, @RequestParam("file") MultipartFile file, HttpSession session) throws IOException {
-		String imageName = file !=null ? file.getOriginalFilename() : "default.png"; 
-		
-		product.setProductImage(imageName);
-		product.setDiscount(0);
-		product.setDiscountPrice(product.getProductPrice());
-		
-		Product saveProduct = productService.saveProduct(product);
-		 
-		if(!ObjectUtils.isEmpty(saveProduct)) {
-			File savefile = new ClassPathResource("static/img").getFile();
-			Path path = Paths.get(savefile.getAbsolutePath()+File.separator+"product_image"+File.separator+imageName);
-			System.out.println("File save Path :"+path);
-			Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-			session.setAttribute("successMsg", "Product Save Successfully.");
-		}else {
-			session.setAttribute("errorMsg", "Something Wrong on server while save Product");
-			//System.out.println("Something Wrong on server while save Product");
+	public String saveProduct(@ModelAttribute Product product, 
+                         @RequestParam(value = "productImage", required = false) MultipartFile file,
+                         HttpSession session) {
+		try {
+			// Validate category
+			if (product.getCategory() == null || product.getCategory().getId() == null) {
+				session.setAttribute("errorMsg", "Please select a category");
+				return "redirect:/admin/add-product";
+			}
+
+			// Set default values
+			product.setDiscount(0);
+			product.setDiscountPrice(product.getProductPrice());
+			product.setIsActive(true);
+			product.setIsDiscountActive(false);
+
+			// Handle file upload
+			String imageName = "default.png";
+			if (file != null && !file.isEmpty()) {
+				imageName = file.getOriginalFilename();
+				File saveFile = new ClassPathResource("static/img").getFile();
+				Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "product_image" + File.separator + imageName);
+				Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+			}
+			product.setProductImage(imageName);
+
+			// Save product
+			Product savedProduct = productService.saveProduct(product);
+			if (savedProduct != null) {
+				session.setAttribute("successMsg", "Product saved successfully");
+			} else {
+				session.setAttribute("errorMsg", "Error saving product");
+			}
+
+		} catch (Exception e) {
+			session.setAttribute("errorMsg", "Error saving product: " + e.getMessage());
 		}
 		
 		return "redirect:/admin/product-list";
