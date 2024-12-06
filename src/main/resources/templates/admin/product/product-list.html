@@ -17,25 +17,6 @@
 			</div>
 			
 			<div class="row">
-				<!-- <div class="col-md-4">
-					<div class="card custom-card-shadow">
-						<div class="card-header text-center">
-							<p class="fs-4">Add Category</p>
-							<th:block th:if="${session.successMsg}">
-								<p class="text-success fw-bold text-center mt-2">[[${session.successMsg}]]</p>
-								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-							</th:block>
-							<th:block th:if="${session.errorMsg}">
-								<p class="text-danger fw-bold text-center mt-2">[[${session.errorMsg}]]</p>
-								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-							</th:block>
-
-						</div>
-
-						
-					</div>
-				</div> -->
-
 				<div class="col-md-12">
 					<div class="card custom-card-shadow">
 						<div class="card-header text-center fs-4">List of Products</div>
@@ -70,7 +51,7 @@
 										<th scope="row">[[${count.count}]]</th>
 										<td><img th:src="@{'/img/product_image/'+${product.productImage}}" width="50px;" height="50px;"></td>
 										<td>[[${product.productTitle}]]</td>
-										<td>[[${product.productCategory}]]</td>
+										<td th:text="${product.category != null ? product.category.categoryName : ''}">Category</td>
 										<td>[[${product.productPrice}]]</td>
 										<td>[[${product.discount}]]</td>
 										<td>[[${product.discountPrice}]]</td>

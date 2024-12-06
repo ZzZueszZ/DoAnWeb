@@ -40,14 +40,14 @@
 									</div>
 								<div class="row">
 									<div class="mb-3 col">
-										<label>Category</label> <select class="form-control"
-											name="productCategory">
-											<option>[[${product.productCategory}]]</option>
-											<!-- This code-->
-											<!-- <option th:each="category :${allCategoryList}" th:value="${category.id}" th:text="${categor84438443y.categoryName}"></option> -->
-											<!-- or the below both will work -->
-											<option th:each="category :${allCategoryList}">[[${category.categoryName}]]</option>
-
+										<label>Category</label>
+										<select name="category.id" class="form-control" required>
+											<option value="">Select Category</option>
+											<option th:each="cat : ${allCategoryList}" 
+													th:value="${cat.id}" 
+													th:text="${cat.categoryName}"
+													th:selected="${product.category != null && product.category.id == cat.id}">
+											</option>
 										</select>
 									</div>
 

@@ -38,15 +38,13 @@
 									</div>
 
 								<div class="mb-3">
-									<label>Category</label> <select class="form-control"
-										name="productCategory">
-										<option value="">------Select Category------</option>
-										<!-- This code-->
-										<!-- <option th:each="category :${allCategoryList}" th:value="${category.id}" th:text="${categor84438443y.categoryName}"></option> -->
-										<!-- or the below both will work -->
-										<option th:each="category :${allCategoryList}">[[${category.categoryName}]]</option>
-										<!-- <option>Electronics</option> -->
-										<!-- <option>Phone</option> -->
+									<label>Category</label>
+									<select name="category.id" class="form-control" required>
+										<option value="">Select Category</option>
+										<option th:each="cat : ${categories}" 
+												th:value="${cat.id}" 
+												th:text="${cat.categoryName}">
+										</option>
 									</select>
 								</div>
 
@@ -76,8 +74,8 @@
 									</div>
 
 									<div class="mb-3 col">
-										<label>Upload Image</label> <input type="file"
-											name="file" class="form-control">
+										<label>Upload Image</label>
+										<input type="file" name="file" class="form-control">
 									</div>
 								</div>
 								<button class="btn btn-danger col-md-12">Submit</button>	

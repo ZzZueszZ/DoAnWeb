@@ -3,13 +3,10 @@ package com.mdtalalwasim.ecommerce.entity;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,13 +43,16 @@ public class User {
 
 	private String profileImage;
 
+	@Column(columnDefinition = "ENUM('ROLE_USER', 'ROLE_VENDOR', 'ROLE_ADMIN') DEFAULT 'ROLE_USER'")
 	private String role;
 
+	@Column(columnDefinition = "TINYINT(1) DEFAULT 1")
 	private Boolean isEnable;
 
-	//implement user account lock for wrong password
+	@Column(columnDefinition = "TINYINT(1) DEFAULT 1")
 	private Boolean accountStatusNonLocked;
 
+	@Column(columnDefinition = "INT DEFAULT 0")
 	private Integer accountFailedAttemptCount;
 
 	private Date accountLockTime;

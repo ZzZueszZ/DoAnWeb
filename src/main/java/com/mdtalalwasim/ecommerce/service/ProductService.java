@@ -5,24 +5,26 @@ import java.util.Optional;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.mdtalalwasim.ecommerce.entity.Category;
 import com.mdtalalwasim.ecommerce.entity.Product;
 
 public interface ProductService {
 
-	public Product saveProduct(Product product);
+	Product saveProduct(Product product);
 
-	//boolean existCategory(String categoryName);
 
-	public List<Product> getAllProducts();
+	List<Product> getAllProducts();
 
-	public Boolean deleteProduct(long id);
+	Boolean deleteProduct(long id);
 
-	public Optional<Product> findById(long id);
+	Optional<Product> findById(long id);
 
-	public Product getProductById(long id);
+	Product getProductById(long id);
 	
-	public Product updateProductById(Product product, MultipartFile file);
+	Product updateProductById(Product product, MultipartFile file);
 	
 	List<Product> findAllActiveProducts(String category);
+
+	List<Product> getProductsByCategory(String categoryName);
+
+	List<Product> getProductsByCategoryId(Long categoryId);
 }
