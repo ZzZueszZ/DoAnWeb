@@ -152,7 +152,7 @@ public class UserController {
 		String email = principal.getName();
 		User user = userService.getUserByEmail(email);
 		model.addAttribute("user", user);
-		return "user-profile";
+		return "user/user-profile";
 	}
 
 	@GetMapping("/edit-profile")
@@ -160,7 +160,7 @@ public class UserController {
 		String email = principal.getName();
 		User user = userService.getUserByEmail(email);
 		model.addAttribute("user", user);
-		return "edit-profile";
+		return "user/edit-profile";
 	}
 
 	@PostMapping("/update-profile")
