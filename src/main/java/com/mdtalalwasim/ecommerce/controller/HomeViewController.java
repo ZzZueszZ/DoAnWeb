@@ -8,11 +8,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -56,8 +58,6 @@ public class HomeViewController {
 	@Autowired
 	CartService cartService;
 
-	//	@Autowired
-//	BCryptPasswordEncoder bCryptPasswordEncoder;
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
@@ -85,15 +85,14 @@ public class HomeViewController {
 
 	@GetMapping("/")
 	public String homeIndex(Model model) {
-
 		List<Category> allActiveCategory = categoryService.findAllActiveCategory();
 		List<Category> latestSixActiveCategory = allActiveCategory.stream()
 				.sorted((cat1, cat2) -> cat2.getId().compareTo(cat1.getId()))
 				.limit(6).toList();
 
-		List<Product> latestEightActiveProducts = productService.findAllActiveProducts("").stream()
-				.sorted((p1, p2) -> p2.getId().compareTo(p1.getId()))
-				.limit(8).toList();
+		// Lấy 8 sản phẩm mới nhất
+		Page<Product> latestProducts = productService.findPaginated(1, 8, "id", "desc");
+		List<Product> latestEightActiveProducts = latestProducts.getContent();
 
 		model.addAttribute("latestEightActiveProducts", latestEightActiveProducts);
 		model.addAttribute("latestSixActiveCategory", latestSixActiveCategory);
@@ -113,14 +112,43 @@ public class HomeViewController {
 	}
 
 	@GetMapping("/products")
-	public String product(Model model, @RequestParam(name = "category", defaultValue = "") String category) {
-		//System.out.println("Category="+category);
+	public String product(Model model,
+						 @RequestParam(name = "category", defaultValue = "") String category,
+						 @RequestParam(required = false) String search,
+						 @RequestParam(defaultValue = "1") int page,
+						 @RequestParam(defaultValue = "8") int size) {
 
-		List<Category> allActiveCategory = categoryService.findAllActiveCategory();
-		List<Product> allActiveProducts = productService.findAllActiveProducts(category);
-		model.addAttribute("allActiveCategory", allActiveCategory);
-		model.addAttribute("allActiveProducts", allActiveProducts);
+		// Thêm danh sách page sizes
+		List<Integer> pageSizes = Arrays.asList(8, 15, 30, 50);
+		
+		// Validate page size
+		if (!pageSizes.contains(size)) {
+			size = 8; // Default size
+		}
+		
+		Page<Product> productPage;
+		if (search != null && !search.trim().isEmpty()) {
+			productPage = productService.searchProducts(search, page, size);
+		} else if (!category.isEmpty()) {
+			productPage = productService.findByCategory(category, page, size);
+		} else {
+			productPage = productService.findPaginated(page, size, "id", "desc");
+		}
+
+		model.addAttribute("allActiveProducts", productPage.getContent());
+		model.addAttribute("currentPage", page);
+		model.addAttribute("totalPages", productPage.getTotalPages());
+		model.addAttribute("totalItems", productPage.getTotalElements());
+		model.addAttribute("pageSize", size);
+		model.addAttribute("pageSizes", pageSizes);
+
+		model.addAttribute("allActiveCategory", categoryService.findAllActiveCategory());
 		model.addAttribute("paramValue", category);
+
+		if (search != null && !search.trim().isEmpty()) {
+			model.addAttribute("searchTerm", search);
+		}
+
 		return "product";
 	}
 

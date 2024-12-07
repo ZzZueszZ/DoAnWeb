@@ -2,13 +2,11 @@ package com.mdtalalwasim.ecommerce.controller;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import com.mdtalalwasim.ecommerce.entity.Product;
 import com.mdtalalwasim.ecommerce.service.ProductService;
-import com.mdtalalwasim.ecommerce.entity.Category;
-import com.mdtalalwasim.ecommerce.service.CategoryService;
 
 @RestController
 @RequestMapping("/api/products")
@@ -17,34 +15,35 @@ public class ProductController {
     @Autowired
     private ProductService productService;
     
-    @Autowired
-    private CategoryService categoryService;
-    
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
-        return ResponseEntity.ok(products);
+    public ResponseEntity<List<Product>> getAllProducts(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<Product> productPage = productService.findPaginated(page, size, "id", "desc");
+        return ResponseEntity.ok(productPage.getContent());
     }
 
     @GetMapping("/active")
     public ResponseEntity<List<Product>> getAllActiveProducts(
-            @RequestParam(required = false) String category) {
-        List<Product> products = productService.findAllActiveProducts(category);
-        return ResponseEntity.ok(products);
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<Product> productPage;
+        if (category != null && !category.isEmpty()) {
+            productPage = productService.findByCategory(category, page, size);
+        } else {
+            productPage = productService.findPaginated(page, size, "id", "desc");
+        }
+        return ResponseEntity.ok(productPage.getContent());
     }
     
     @GetMapping("/category/{categoryName}")
     public ResponseEntity<List<Product>> getProductsByCategory(
-            @PathVariable String categoryName) {
-        List<Product> products = productService.getProductsByCategory(categoryName);
-        return ResponseEntity.ok(products);
-    }
-    
-    @GetMapping("/category/id/{categoryId}")
-    public ResponseEntity<List<Product>> getProductsByCategoryId(
-            @PathVariable Long categoryId) {
-        List<Product> products = productService.getProductsByCategoryId(categoryId);
-        return ResponseEntity.ok(products);
+            @PathVariable String categoryName,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<Product> productPage = productService.findByCategory(categoryName, page, size);
+        return ResponseEntity.ok(productPage.getContent());
     }
     
     @GetMapping("/{id}")
