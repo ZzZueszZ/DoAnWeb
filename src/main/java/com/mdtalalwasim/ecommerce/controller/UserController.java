@@ -5,6 +5,7 @@ import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
@@ -146,6 +147,7 @@ public class UserController {
 
 
 	@GetMapping("/profile")
+	@PreAuthorize("hasAnyRole('USER', 'CONSULTANT')")
 	public String viewProfile(Model model, Principal principal) {
 		String email = principal.getName();
 		User user = userService.getUserByEmail(email);
@@ -162,9 +164,34 @@ public class UserController {
 	}
 
 	@PostMapping("/update-profile")
-	public String updateProfile(@ModelAttribute User user, RedirectAttributes redirectAttributes) {
-		userService.updateUserProfile(user);
-		redirectAttributes.addFlashAttribute("successMessage", "Profile updated successfully.");
+	@PreAuthorize("hasAnyRole('USER', 'CONSULTANT')")
+	public String updateProfile(@ModelAttribute User user, 
+							  @RequestParam(required = false) MultipartFile profileImage,
+							  HttpSession session) {
+		try {
+			// Lấy user hiện tại t� DB
+			User existingUser = userService.getUserByEmail(user.getEmail());
+			
+			// Cập nhật thông tin c� bản
+			existingUser.setName(user.getName());
+			existingUser.setMobile(user.getMobile());
+			existingUser.setAddress(user.getAddress());
+			existingUser.setCity(user.getCity());
+			existingUser.setState(user.getState());
+			existingUser.setPinCode(user.getPinCode());
+			
+			// Lưu thông tin user
+			userService.updateUserProfile(existingUser);
+			
+			// Xử lý upload ảnh nếu có
+			if(profileImage != null && !profileImage.isEmpty()) {
+				userService.changeProfilePicture(user.getEmail(), profileImage);
+			}
+			
+			session.setAttribute("successMsg", "Profile Updated Successfully");
+		} catch (Exception e) {
+			session.setAttribute("errorMsg", "Error updating profile: " + e.getMessage());
+		}
 		return "redirect:/user/profile";
 	}
 

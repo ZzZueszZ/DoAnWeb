@@ -1,0 +1,28 @@
+<!-- Add to admin navbar -->
+<li class="nav-item" th:if="${currentLoggedInUserDetails != null && currentLoggedInUserDetails.role == 'ROLE_CONSULTANT'}">
+    <a class="nav-link" th:href="@{/admin/consultant/dashboard}">
+        <i class="fas fa-headset"></i> Chat Support
+        <span class="badge bg-danger" id="unreadCount_admin">0</span>
+    </a>
+</li>
+
+<!-- Add to user navbar -->
+<li class="nav-item" th:if="${currentLoggedInUserDetails != null}">
+    <a class="nav-link" th:href="@{/user/chat}">
+        <i class="fas fa-comments"></i> Chat Support
+        <span class="badge bg-danger" id="unreadCount_user">0</span>
+    </a>
+</li>
+
+<!-- Trong phần dropdown menu của user đã đăng nhập -->
+<ul class="dropdown-menu">
+    <th:block th:if="${currentLoggedInUserDetails.role == 'ROLE_ADMIN'}">
+        <li><a class="dropdown-item" href="/admin/">Dashboard</a></li>
+    </th:block>
+    <th:block th:if="${currentLoggedInUserDetails.role == 'ROLE_CONSULTANT'}">
+        <li><a class="dropdown-item" href="/consultant/dashboard">Chat Dashboard</a></li>
+    </th:block>
+    <li><a class="dropdown-item" href="/user/profile">Profile</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="/logout">Logout</a></li>
+</ul> 

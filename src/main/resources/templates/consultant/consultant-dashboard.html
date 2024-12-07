@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base::layout(~{::section})}">
+<head>
+    <title>Consultant Dashboard</title>
+</head>
+<body>
+<section>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Danh sách khách hàng -->
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-users"></i> Customers
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush" id="customerList">
+                            <!-- Customers will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Khu vực chat -->
+            <div class="col-md-9">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-comments"></i> 
+                            Chat with: <span id="currentCustomerName">Select a customer</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chat-messages" id="chatMessages">
+                            <!-- Messages will be added here -->
+                        </div>
+                        <div class="chat-input mt-3">
+                            <div class="input-group">
+                                <input type="text" id="messageInput" class="form-control" 
+                                       placeholder="Type your message..." disabled>
+                                <button class="btn btn-primary" onclick="sendMessage()" disabled>
+                                    <i class="fas fa-paper-plane"></i> Send
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script th:inline="javascript">
+        var stompClient = null;
+        var currentCustomerId = null;
+        var consultantId = /*[[${currentLoggedInUserDetails.id}]]*/ null;
+
+        function connect() {
+            var socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function() {
+                console.log('Connected to WebSocket');
+                
+                // Subscribe kênh chung cho consultant
+                stompClient.subscribe('/topic/messages', function(message) {
+                    var msg = JSON.parse(message.body);
+                    showMessage(msg);
+                });
+
+                // Load danh sách khách hàng
+                loadCustomers();
+            });
+        }
+
+        function loadCustomers() {
+            fetch('/chat/customers')
+                .then(response => response.json())
+                .then(customers => {
+                    var customerList = document.getElementById('customerList');
+                    customerList.innerHTML = '';
+                    
+                    customers.forEach(customer => {
+                        var customerElement = document.createElement('a');
+                        customerElement.href = '#';
+                        customerElement.setAttribute('data-user-id', customer.id);
+                        customerElement.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                        customerElement.innerHTML = `
+                            <div>
+                                <i class="fas fa-user"></i> ${customer.name}
+                                <small class="text-muted d-block">${customer.email}</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill unread-count">0</span>
+                        `;
+                        customerElement.onclick = () => selectCustomer(customer);
+                        customerList.appendChild(customerElement);
+                    });
+                });
+        }
+
+        function selectCustomer(customer) {
+            currentCustomerId = customer.id;
+            document.getElementById('currentCustomerName').textContent = customer.name;
+            document.getElementById('messageInput').disabled = false;
+            document.querySelector('button[onclick="sendMessage()"]').disabled = false;
+            
+            // Load chat history
+            loadChatHistory(customer.id);
+            
+            // Mark messages as read
+            markMessagesAsRead(customer.id);
+        }
+
+        function loadChatHistory(customerId) {
+            fetch('/chat/history/' + customerId)
+                .then(response => response.json())
+                .then(messages => {
+                    var messagesDiv = document.getElementById('chatMessages');
+                    messagesDiv.innerHTML = '';
+                    messages.forEach(showMessage);
+                });
+        }
+
+        function sendMessage() {
+            if (!currentCustomerId) return;
+
+            var messageInput = document.getElementById('messageInput');
+            if(messageInput.value.trim() === '') return;
+
+            var message = {
+                userId: currentCustomerId,
+                receiverId: currentCustomerId,
+                message: messageInput.value,
+                sender: 'CONSULTANT'
+            };
+            
+            console.log('Sending message:', message);
+            stompClient.send("/app/chat.send", {}, JSON.stringify(message));
+            messageInput.value = '';
+        }
+
+        function showMessage(message) {
+            var messagesDiv = document.getElementById('chatMessages');
+            var messageElement = document.createElement('div');
+            
+            var isSentByConsultant = message.sentBy === 'CONSULTANT';
+            messageElement.className = 'chat-message ' + 
+                (isSentByConsultant ? 'consultant-message' : 'user-message');
+            
+            var contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = message.message;
+            messageElement.appendChild(contentDiv);
+
+            if(message.sentAt) {
+                var timeDiv = document.createElement('div');
+                timeDiv.className = 'message-time';
+                timeDiv.textContent = new Date(message.sentAt).toLocaleTimeString();
+                messageElement.appendChild(timeDiv);
+            }
+
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function markMessagesAsRead(userId) {
+            fetch(`/chat/mark-as-read/${userId}`, {
+                method: 'POST'
+            }).then(() => {
+                // Update UI to show messages are read
+                var badge = document.querySelector(`[data-user-id="${userId}"] .unread-count`);
+                if(badge) {
+                    badge.textContent = '0';
+                    badge.style.display = 'none';
+                }
+            });
+        }
+
+        // Thêm event listener cho input
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Kết nối khi trang load xong
+        connect();
+    </script>
+
+    <style>
+        .chat-messages {
+            height: 500px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+        
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+            position: relative;
+        }
+        
+        .user-message {
+            background-color: #e9ecef;
+            margin-right: auto;
+            border-radius: 15px 15px 15px 0;
+        }
+        
+        .consultant-message {
+            background-color: #007bff;
+            color: white;
+            margin-left: auto;
+            border-radius: 15px 15px 0 15px;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .list-group-item {
+            border: none;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .unread-count {
+            display: none;
+        }
+    </style>
+</section>
+</body>
+</html> 

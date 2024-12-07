@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base::layout(~{::section})}">
+<head>
+    <title>Chat Support</title>
+</head>
+<body>
+<section>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Chat Support</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chat-messages" id="chatMessages">
+                            <!-- Messages will be added here -->
+                        </div>
+                        <div class="chat-input mt-3">
+                            <div class="input-group">
+                                <input type="text" id="messageInput" class="form-control" 
+                                       placeholder="Type your message...">
+                                <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script th:inline="javascript">
+        // Khai báo biến global
+        var stompClient = null;
+        var userId = /*[[${currentLoggedInUserDetails.id}]]*/ null;
+        var consultantId = 1;
+
+        // Định nghĩa các function ở scope global
+        function sendMessage() {
+            var messageInput = document.getElementById('messageInput');
+            if(messageInput.value.trim() === '') return;
+
+            if(stompClient) {
+                var chatMessage = {
+                    userId: userId,
+                    receiverId: consultantId,
+                    message: messageInput.value,
+                    sender: 'USER'
+                };
+
+                console.log('Sending message:', chatMessage);
+
+                stompClient.send("/app/chat.send", {}, JSON.stringify(chatMessage));
+                messageInput.value = '';
+            } else {
+                console.log('WebSocket not connected');
+                connect();
+            }
+        }
+
+        function showMessage(message) {
+            var messagesDiv = document.getElementById('chatMessages');
+            var messageElement = document.createElement('div');
+            
+            // Xác định người gửi
+            var isSentByUser = message.sentBy === 'USER';
+            
+            // Thêm class dựa vào người gửi
+            messageElement.className = 'chat-message ' + 
+                (isSentByUser ? 'user-message' : 'consultant-message');
+
+            // Tạo nội dung tin nhắn
+            var contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = message.message;
+            messageElement.appendChild(contentDiv);
+
+            // Thêm thời gian
+            if(message.sentAt) {
+                var timeDiv = document.createElement('div');
+                timeDiv.className = 'message-time';
+                timeDiv.textContent = new Date(message.sentAt).toLocaleTimeString();
+                messageElement.appendChild(timeDiv);
+            }
+
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function connect() {
+            if(!userId) {
+                window.location.href = '/signin';
+                return;
+            }
+
+            var socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            
+            var headers = {};
+            stompClient.connect(headers, function() {
+                console.log('Connected to WebSocket');
+                
+                // Subscribe kênh riêng
+                stompClient.subscribe('/user/' + userId + '/queue/messages', function(message) {
+                    showMessage(JSON.parse(message.body));
+                });
+                
+                // Subscribe kênh chung
+                stompClient.subscribe('/topic/messages', function(message) {
+                    showMessage(JSON.parse(message.body));
+                });
+                
+                // Load lịch sử chat
+                loadChatHistory();
+            }, function(error) {
+                console.log('WebSocket Error:', error);
+                setTimeout(connect, 5000);
+            });
+        }
+
+        function loadChatHistory() {
+            fetch('/chat/history/' + userId)
+                .then(response => response.json())
+                .then(messages => {
+                    var messagesDiv = document.getElementById('chatMessages');
+                    messagesDiv.innerHTML = '';
+                    messages.forEach(showMessage);
+                })
+                .catch(error => console.error('Error loading chat history:', error));
+        }
+
+        // Khởi tạo khi document ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Thêm event listener cho input
+            document.getElementById('messageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Kết nối WebSocket
+            connect();
+
+            // Cấu hình heartbeat
+            if(stompClient) {
+                stompClient.heartbeat.outgoing = 20000;
+                stompClient.heartbeat.incoming = 20000;
+            }
+        });
+    </script>
+
+    <style>
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+        
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+            position: relative;
+        }
+        
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            margin-left: auto;
+            border-radius: 15px 15px 0 15px;
+        }
+        
+        .consultant-message {
+            background-color: #e9ecef;
+            margin-right: auto;
+            border-radius: 15px 15px 15px 0;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .message-content {
+            word-wrap: break-word;
+        }
+
+        .chat-input {
+            position: relative;
+            padding: 15px;
+            background: #fff;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</section>
+</body>
+</html> 

@@ -48,9 +48,13 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.csrf(csrf -> csrf.disable())
 		.cors(cors->cors.disable())
-		.authorizeHttpRequests(req-> req.requestMatchers("/user/**").hasRole("USER")
-		.requestMatchers("/admin/**").hasRole("ADMIN")
-		.requestMatchers("/**").permitAll())
+		.authorizeHttpRequests(req-> req
+			.requestMatchers("/user/profile", "/user/update-profile", "/user/change-profile-picture").hasAnyRole("USER", "CONSULTANT")
+			.requestMatchers("/user/**").hasRole("USER")
+			.requestMatchers("/admin/**").hasRole("ADMIN")
+			.requestMatchers("/consultant/**").hasRole("CONSULTANT")
+			.requestMatchers("/ws/**", "/app/**", "/topic/**", "/queue/**").permitAll()
+			.requestMatchers("/**").permitAll())
 		.formLogin(form-> form.loginPage("/signin")
 				.loginProcessingUrl("/login")
 				//.defaultSuccessUrl("/")//before implements authenticationsSuccessHandler.

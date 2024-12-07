@@ -77,10 +77,29 @@
 							aria-current="page" href="/admin/">ADMIN</a></li>
 					</th:block>
 
-					<th:block th:if="${currentLoggedInUserDetails != null}">
+					<th:block th:if="${currentLoggedInUserDetails != null  }">
 						<li class="nav-item"><a class="nav-link active"
 							aria-current="page" href="/user/cart"><i class="fas fa-cart-shopping"></i> Cart [ [[${countCartForUser}]] ]</a></li>
-						
+						<th:block th:if="${currentLoggedInUserDetails != null && currentLoggedInUserDetails.role == 'ROLE_USER'}">
+
+						<li class="nav-item">
+							<a class="nav-link active" th:href="@{/user/chat}">
+								<i class="fas fa-comments"></i> Chat Support
+								<span class="badge bg-danger" id="unreadCount">0</span>
+							</a>
+						</li>
+						</th:block>
+
+
+						<th:block th:if="${currentLoggedInUserDetails != null && currentLoggedInUserDetails.role == 'ROLE_CONSULTANT'}">
+							<li class="nav-item">
+								<a class="nav-link active" th:href="@{/consultant/dashboard}">
+									<i class="fas fa-headset"></i> Support Dashboard
+									<span class="badge bg-danger" id="consultantUnreadCount">0</span>
+								</a>
+							</li>
+						</th:block>
+
 						<li class="nav-item dropdown">
 						
 						<a class="nav-link active dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"> 

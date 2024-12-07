@@ -1,9 +1,11 @@
 package com.mdtalalwasim.ecommerce.service.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -11,12 +13,13 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.mdtalalwasim.ecommerce.entity.User;
 import com.mdtalalwasim.ecommerce.repository.UserRepository;
 import com.mdtalalwasim.ecommerce.service.UserService;
 import com.mdtalalwasim.ecommerce.utils.AppConstant;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -153,48 +156,62 @@ public class UserServiceImpl implements UserService{
 		userRepository.save(user);
 	}
 
-
+	@Override
+	@Transactional
 	public void updateUserProfile(User user) {
-			if (user.getId() == null) { throw new IllegalArgumentException("User ID must not be null"); }
-				User existingUser = userRepository.findById(user.getId())
-						.orElseThrow(() -> new RuntimeException("User not found"));
-
-				// Cập nhật các trường thông tin
-				existingUser.setName(user.getName());
-				existingUser.setEmail(user.getEmail());
-				existingUser.setMobile(user.getMobile());
-				existingUser.setAddress(user.getAddress());
-				existingUser.setCity(user.getCity());
-				existingUser.setState(user.getState());
-				existingUser.setPinCode(user.getPinCode());
-
-				// Mã hóa mật khẩu nếu thay đổi và mật khẩu mới không bị null
-				if (user.getPassword() != null && !user.getPassword().equals(existingUser.getPassword())) {
-					existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
-				}
-
-				userRepository.save(existingUser);
+		try {
+			// Validate user
+			if(user == null || user.getEmail() == null) {
+				throw new RuntimeException("Invalid user data");
 			}
 
-		public void changeProfilePicture(String email, MultipartFile file) throws IOException {
-					User user = getUserByEmail(email);
+			// Lấy user hiện tại t� DB
+			User existingUser = userRepository.findById(user.getId())
+				.orElseThrow(() -> new RuntimeException("User not found"));
 
-					// Đường dẫn tới thư mục lưu trữ ảnh
-					Path uploadPath = Paths.get("uploads/profile/");
-					if (!Files.exists(uploadPath)) {
-						Files.createDirectories(uploadPath);
-					}
+			// Cập nhật thông tin
+			existingUser.setName(user.getName());
+			existingUser.setMobile(user.getMobile());
+			existingUser.setAddress(user.getAddress());
+			existingUser.setCity(user.getCity());
+			existingUser.setState(user.getState());
+			existingUser.setPinCode(user.getPinCode());
 
-					// Lưu file ảnh vào thư mục lưu trữ
-					Path filePath = uploadPath.resolve(file.getOriginalFilename());
-					Files.write(filePath, file.getBytes());
-
-					// Cập nhật đường dẫn ảnh trong cơ sở dữ liệu
-					user.setProfileImage("/uploads/profile/" + file.getOriginalFilename());
-					userRepository.save(user);
-				}
-
+			// Lưu user
+			userRepository.save(existingUser);
+			
+		} catch (Exception e) {
+			throw new RuntimeException("Error updating user profile: " + e.getMessage());
 		}
+	}
+
+	@Override
+	@Transactional
+	public void changeProfilePicture(String email, MultipartFile file) throws IOException {
+		User user = getUserByEmail(email);
+		if(user == null) {
+			throw new RuntimeException("User not found");
+		}
+
+		// Xử lý upload file
+		String fileName = file.getOriginalFilename();
+		Path uploadPath = Paths.get("uploads/profile/");
+		
+		if (!Files.exists(uploadPath)) {
+			Files.createDirectories(uploadPath);
+		}
+
+		try (InputStream inputStream = file.getInputStream()) {
+			Path filePath = uploadPath.resolve(fileName);
+			Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+			
+			// Cập nhật đường dẫn ảnh trong DB
+			user.setProfileImage("/uploads/profile/" + fileName);
+			userRepository.save(user);
+		}
+	}
+
+}
 
 
 
