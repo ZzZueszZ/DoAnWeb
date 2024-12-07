@@ -1,4 +1,4 @@
-package com.mdtalalwasim.ecommerce.controller;
+package com.mdtalalwasim.ecommerce.controller.rest;
 
 import com.mdtalalwasim.ecommerce.dto.ChatMessage;
 import com.mdtalalwasim.ecommerce.entity.Chat;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-public class ChatController {
+public class ChatRestController {
 
     @Autowired
     private ChatService chatService;

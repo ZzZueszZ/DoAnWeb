@@ -57,6 +57,11 @@ public class UserServiceImpl implements UserService{
 	}
 
 	@Override
+	public User getUserById(long id) {
+		return userRepository.findById(id).orElse(null);
+	}
+
+	@Override
 	public List<User> getAllUsersByRole(String role) {
 		// TODO Auto-generated method stub
 		return userRepository.findByRole(role);
@@ -209,6 +214,11 @@ public class UserServiceImpl implements UserService{
 			user.setProfileImage("/uploads/profile/" + fileName);
 			userRepository.save(user);
 		}
+	}
+
+	@Override
+	public List<User> getAllUsers() {
+		return userRepository.findAll();
 	}
 
 }

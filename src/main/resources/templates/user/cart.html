@@ -63,6 +63,13 @@
 									</tr>
 								</thead>
 								<tbody>
+									<tr th:if="${#lists.isEmpty(carts)}">
+										<td colspan="6" class="text-center">
+											<div class="alert alert-info">
+												Your cart is empty! <a th:href="@{/}" class="alert-link">Continue shopping</a>
+											</div>
+										</td>
+									</tr>
 									<tr th:each="cart, count : ${carts}">
 										<th scope="row">[[${count.count}]]</th>
 										<td><img th:src="@{'/img/product_image/'+${cart.product.productImage}}" width="50px;" height="50px;"></td>
@@ -87,7 +94,13 @@
 									
 								</tbody>
 							</table>
-							<div class="text-center"><a href="/user/orders" class="btn btn-warning">Proceed Payment</a></div>
+							<div class="text-center" th:if="${!#lists.isEmpty(carts)}">
+								<form th:action="@{/user/place-order}" method="post">
+									<button type="submit" class="btn btn-warning">
+										<i class="fas fa-credit-card"></i> Place Order
+									</button>
+								</form>
+							</div>
 						</div>
 					</div>
 				</div>

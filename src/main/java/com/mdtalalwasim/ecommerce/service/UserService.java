@@ -11,6 +11,7 @@ public interface UserService {
 	public User saveUser(User user);
 	
 	public User getUserByEmail(String email);
+	User getUserById(long id);
 	
 	public List<User> getAllUsersByRole(String role);
 
@@ -36,5 +37,7 @@ public interface UserService {
 	public void updateUserProfile(User user);
 
 	public void changeProfilePicture(String email, MultipartFile file) throws IOException;
+
+	public List<User> getAllUsers();
 
 }

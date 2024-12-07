@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base::layout(~{::section})}">
+<head>
+    <title>Manage Orders</title>
+</head>
+<body>
+<section>
+    <div class="container-fluid p-5">
+        <div class="card custom-card-shadow">
+            <div class="card-header">
+                <h2 class="text-center">Manage Orders</h2>
+            </div>
+
+            <!-- Thông báo -->
+            <th:block th:if="${session.successMsg}">
+                <p class="text-success fw-bold text-center mt-2">[[${session.successMsg}]]</p>
+                <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+            </th:block>
+            <th:block th:if="${session.errorMsg}">
+                <p class="text-danger fw-bold text-center mt-2">[[${session.errorMsg}]]</p>
+                <th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+            </th:block>
+
+            <div class="card-body">
+                <!-- Filter và Sort -->
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <form id="filterForm" th:action="@{/admin/orders}" method="get" class="d-flex gap-2">
+                            <!-- Filter by Status -->
+                            <select name="status" class="form-select" onchange="this.form.submit()">
+                                <option value="">All Status</option>
+                                <option value="PENDING" th:selected="${param.status == 'PENDING'}">Pending</option>
+                                <option value="CONFIRMED" th:selected="${param.status == 'CONFIRMED'}">Confirmed</option>
+                                <option value="CANCELLED" th:selected="${param.status == 'CANCELLED'}">Cancelled</option>
+                            </select>
+                            
+                            <!-- Sort by Date -->
+                            <select name="sort" class="form-select" onchange="this.form.submit()">
+                                <option value="desc" th:selected="${param.sort == null || param.sort == 'desc'}">Newest First</option>
+                                <option value="asc" th:selected="${param.sort == 'asc'}">Oldest First</option>
+                            </select>
+
+                            <!-- Search by Order ID -->
+                            <input type="text" name="orderId" class="form-control" 
+                                   placeholder="Search Order ID" 
+                                   th:value="${param.orderId}">
+
+                            <!-- Search by Customer -->
+                            <input type="text" name="customer" class="form-control" 
+                                   placeholder="Search Customer" 
+                                   th:value="${param.customer}">
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+
+                            <!-- Reset Filter -->
+                            <a th:href="@{/admin/orders}" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> Reset
+                            </a>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Total Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(orders)}">
+                                <td colspan="6" class="text-center">No orders found</td>
+                            </tr>
+                            
+                            <tr th:each="order : ${orders}">
+                                <td>#[[${order.id}]]</td>
+                                <td>
+                                    <span>[[${order.user.name}]]</span><br>
+                                    <small class="text-muted">[[${order.user.email}]]</small>
+                                </td>
+                                <td>[[${#temporals.format(order.createdAt, 'dd-MM-yyyy HH:mm')}]]</td>
+                                <td>৳[[${order.totalPrice}]]</td>
+                                <td>
+                                    <span th:if="${order.status.name() == 'PENDING'}" class="badge bg-warning">
+                                        <i class="fas fa-clock"></i> Pending
+                                    </span>
+                                    <span th:if="${order.status.name() == 'CONFIRMED'}" class="badge bg-success">
+                                        <i class="fas fa-check"></i> Confirmed
+                                    </span>
+                                    <span th:if="${order.status.name() == 'CANCELLED'}" class="badge bg-danger">
+                                        <i class="fas fa-times"></i> Cancelled
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <th:block th:if="${order.status.name() == 'PENDING'}">
+                                            <form th:action="@{'/admin/orders/' + ${order.id} + '/approve'}" 
+                                                  method="post" style="display: inline;">
+                                                <button type="submit" class="btn btn-success btn-sm me-2"
+                                                        onclick="return confirm('Are you sure you want to approve this order?')">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </button>
+                                            </form>
+                                            
+                                            <form th:action="@{'/admin/orders/' + ${order.id} + '/cancel'}" 
+                                                  method="post" style="display: inline;">
+                                                <button type="submit" class="btn btn-danger btn-sm me-2"
+                                                        onclick="return confirm('Are you sure you want to cancel this order?')">
+                                                    <i class="fas fa-times"></i> Cancel
+                                                </button>
+                                            </form>
+                                        </th:block>
+
+                                        <button class="btn btn-info btn-sm" 
+                                                data-bs-toggle="modal" 
+                                                th:data-bs-target="'#orderModal' + ${order.id}">
+                                            <i class="fas fa-eye"></i> View Details
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for Order Details -->
+        <div th:each="order : ${orders}" 
+             th:id="'orderModal' + ${order.id}" 
+             class="modal fade">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Order Details #[[${order.id}]]</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Customer Info -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6>Customer Information</h6>
+                                <p>
+                                    <strong>Name:</strong> [[${order.user.name}]]<br>
+                                    <strong>Email:</strong> [[${order.user.email}]]<br>
+                                    <strong>Phone:</strong> [[${order.user.mobile}]]
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Order Information</h6>
+                                <p>
+                                    <strong>Order Date:</strong> [[${#temporals.format(order.createdAt, 'dd-MM-yyyy HH:mm')}]]<br>
+                                    <strong>Status:</strong> 
+                                    <span th:class="${order.status == 'PENDING' ? 'badge bg-warning' : 
+                                                    (order.status == 'CONFIRMED' ? 'badge bg-success' : 'badge bg-danger')}">
+                                        [[${order.status}]]
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Order Items -->
+                        <h6>Order Items</h6>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="item : ${order.orderItems}">
+                                        <td>
+                                            <img th:if="${item.product.productImage}" 
+                                                 th:src="@{${item.product.productImage}}" 
+                                                 width="50px" height="50px" 
+                                                 class="me-2">
+                                            [[${item.product.productTitle}]]
+                                        </td>
+                                        <td>৳[[${item.price}]]</td>
+                                        <td>[[${item.quantity}]]</td>
+                                        <td>৳[[${item.price * item.quantity}]]</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-end"><strong>Total Amount:</strong></td>
+                                        <td><strong>৳[[${order.totalPrice}]]</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.gap-2 {
+    gap: 0.5rem;
+}
+.form-select, .form-control {
+    min-width: 150px;
+}
+</style>
+</body>
+</html> 

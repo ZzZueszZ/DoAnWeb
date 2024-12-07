@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base::layout(~{::section})}">
+<head>
+    <title>Revenue Management</title>
+</head>
+<body>
+<section>
+    <div class="container-fluid p-5">
+        <div class="card custom-card-shadow">
+            <div class="card-header">
+                <h2 class="text-center">Revenue Management</h2>
+            </div>
+
+            <div class="card-body">
+                <!-- Filter Form -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <form id="filterForm" th:action="@{/admin/revenue}" method="get" class="d-flex gap-2">
+                            <!-- Date Range -->
+                            <div class="input-group">
+                                <span class="input-group-text">From</span>
+                                <input type="date" name="startDate" class="form-control" 
+                                       th:value="${param.startDate}">
+                                <span class="input-group-text">To</span>
+                                <input type="date" name="endDate" class="form-control"
+                                       th:value="${param.endDate}">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Filter
+                            </button>
+
+                            <a th:href="@{/admin/revenue}" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> Reset
+                            </a>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Revenue Summary -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Revenue</h5>
+                                <h3 class="mb-0">৳[[${totalRevenue}]]</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Orders</h5>
+                                <h3 class="mb-0">[[${totalOrders}]]</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Average Order Value</h5>
+                                <h3 class="mb-0">৳[[${averageOrderValue}]]</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Table -->
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th>Total Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(orders)}">
+                                <td colspan="5" class="text-center">No orders found</td>
+                            </tr>
+                            
+                            <tr th:each="order : ${orders}">
+                                <td>#[[${order.id}]]</td>
+                                <td>
+                                    <span>[[${order.user.name}]]</span><br>
+                                    <small class="text-muted">[[${order.user.email}]]</small>
+                                </td>
+                                <td>[[${#temporals.format(order.createdAt, 'dd-MM-yyyy HH:mm')}]]</td>
+                                <td>[[${order.orderItems.size()}]]</td>
+                                <td>৳[[${order.totalPrice}]]</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.gap-2 {
+    gap: 0.5rem;
+}
+.form-control {
+    min-width: 120px;
+}
+</style>
+</body>
+</html> 

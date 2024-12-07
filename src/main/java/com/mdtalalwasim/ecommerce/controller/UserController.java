@@ -3,6 +3,7 @@ package com.mdtalalwasim.ecommerce.controller;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +23,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 import jakarta.servlet.http.HttpSession;
+import com.mdtalalwasim.ecommerce.service.OrderService;
+import com.mdtalalwasim.ecommerce.entity.Order;
 
 @Controller
 @RequestMapping("/user")
@@ -35,6 +38,9 @@ public class UserController {
 	
 	@Autowired
 	CartService cartService;
+	
+	@Autowired
+	private OrderService orderService;
 	
 	//to track which user is login right Now
 	//by default call this method when any request come to this controller because of @ModelAttribut
@@ -112,12 +118,6 @@ public class UserController {
 	}
 	
 	
-	@GetMapping("/orders")
-	public String orderPage() {
-		
-		return "/user/order";
-	}
-
 	@GetMapping("/change-password")
 	public String changePasswordPage() {
 		return "change-password";
@@ -169,10 +169,10 @@ public class UserController {
 							  @RequestParam(required = false) MultipartFile profileImage,
 							  HttpSession session) {
 		try {
-			// Lấy user hiện tại t� DB
+			// Lấy user hiện tại t DB
 			User existingUser = userService.getUserByEmail(user.getEmail());
 			
-			// Cập nhật thông tin c� bản
+			// Cập nhật thông tin c bản
 			existingUser.setName(user.getName());
 			existingUser.setMobile(user.getMobile());
 			existingUser.setAddress(user.getAddress());
@@ -205,6 +205,56 @@ public class UserController {
 			redirectAttributes.addFlashAttribute("errorMessage", "Failed to update profile picture.");
 		}
 		return "redirect:/user/profile";
+	}
+
+	@PostMapping("/place-order")
+	public String placeOrder(Principal principal, HttpSession session) {
+		try {
+			User user = userService.getUserByEmail(principal.getName());
+			Order order = orderService.createOrder(user.getId());
+			session.setAttribute("successMsg", "Order placed successfully! Waiting for admin approval.");
+			return "redirect:/user/orders";
+		} catch (Exception e) {
+			session.setAttribute("errorMsg", e.getMessage());
+			return "redirect:/user/cart";
+		}
+	}
+
+	@GetMapping("/orders")
+	public String viewOrders(Principal principal, Model model,
+							@RequestParam(required = false) String status,
+							@RequestParam(defaultValue = "desc") String sort,
+							@RequestParam(required = false) String orderId) {
+		User user = userService.getUserByEmail(principal.getName());
+		List<Order> orders = orderService.getOrdersByUser(user.getId());
+		
+		// Filter by status
+		if (status != null && !status.isEmpty()) {
+			Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status);
+			orders = orders.stream()
+						  .filter(order -> order.getStatus() == orderStatus)
+						  .collect(Collectors.toList());
+		}
+
+		// Filter by Order ID
+		if (orderId != null && !orderId.isEmpty()) {
+			orders = orders.stream()
+						  .filter(order -> order.getId().toString().contains(orderId))
+						  .collect(Collectors.toList());
+		}
+
+		// Sort orders
+		orders.sort((a, b) -> {
+			if ("asc".equals(sort)) {
+				return a.getCreatedAt().compareTo(b.getCreatedAt());
+			} else {
+				return b.getCreatedAt().compareTo(a.getCreatedAt());
+			}
+		});
+
+		model.addAttribute("orders", orders);
+		model.addAttribute("currentUser", user);
+		return "user/orders";
 	}
 }
 

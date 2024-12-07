@@ -4,7 +4,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/ecommerce_store_1
+    url: jdbc:mysql://localhost:3306/ecoommerce_store
     username: root
     password: D0ga00g123@
 

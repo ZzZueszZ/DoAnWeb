@@ -7,11 +7,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.Principal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -35,6 +37,8 @@ import com.mdtalalwasim.ecommerce.service.CartService;
 import com.mdtalalwasim.ecommerce.service.CategoryService;
 import com.mdtalalwasim.ecommerce.service.ProductService;
 import com.mdtalalwasim.ecommerce.service.UserService;
+import com.mdtalalwasim.ecommerce.service.OrderService;
+import com.mdtalalwasim.ecommerce.entity.Order;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -53,6 +57,9 @@ public class AdminViewController {
 	
 	@Autowired
 	CartService cartService;
+	
+	@Autowired
+	private OrderService orderService;
 	
 	//to track which user is login right Now
 	//by default call this method when any request come to this controller because of @ModelAttribut
@@ -255,18 +262,20 @@ public class AdminViewController {
 	//get all users
 	@GetMapping("/get-all-users")
 	public String getAllUser(Model model) {
-		
-		List<User> allUsers = userService.getAllUsersByRole("ROLE_USER");
+		// Get all users except admins
+		List<User> allUsers = userService.getAllUsers().stream()
+				.filter(user -> !user.getRole().equals("ROLE_ADMIN"))
+				.collect(Collectors.toList());
+				
+		// Format date for each user
 		for (User user : allUsers) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 			String format = formatter.format(user.getCreatedAt());
-			model.addAttribute("formattedDateTimeCreatedAt",format);
-			
+			model.addAttribute("formattedDateTimeCreatedAt", format);
 		}
-		model.addAttribute("allUsers",allUsers);
 		
+		model.addAttribute("allUsers", allUsers);
 		return "/admin/users/user-home";
-		
 	}
 	
 
@@ -283,6 +292,129 @@ public class AdminViewController {
 		
 	}
 	
+	@GetMapping("/orders")
+	public String viewOrders(Model model,
+                        @RequestParam(required = false) String status,
+                        @RequestParam(defaultValue = "desc") String sort,
+                        @RequestParam(required = false) String orderId,
+                        @RequestParam(required = false) String customer) {
+    
+        List<Order> orders = orderService.getAllOrders();
 
+        // Filter by status
+        if (status != null && !status.isEmpty()) {
+            Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status);
+            orders = orders.stream()
+                          .filter(order -> order.getStatus() == orderStatus)
+                          .collect(Collectors.toList());
+        }
+
+        // Filter by Order ID
+        if (orderId != null && !orderId.isEmpty()) {
+            orders = orders.stream()
+                          .filter(order -> order.getId().toString().contains(orderId))
+                          .collect(Collectors.toList());
+        }
+
+        // Filter by Customer name or email
+        if (customer != null && !customer.isEmpty()) {
+            String searchTerm = customer.toLowerCase();
+            orders = orders.stream()
+                          .filter(order -> 
+                              order.getUser().getName().toLowerCase().contains(searchTerm) ||
+                              order.getUser().getEmail().toLowerCase().contains(searchTerm))
+                          .collect(Collectors.toList());
+        }
+
+        // Sort orders
+        orders.sort((a, b) -> {
+            if ("asc".equals(sort)) {
+                return a.getCreatedAt().compareTo(b.getCreatedAt());
+            } else {
+                return b.getCreatedAt().compareTo(a.getCreatedAt());
+            }
+        });
+
+        model.addAttribute("orders", orders);
+        return "admin/order/orders";
+    }
+
+	@PostMapping("/orders/{id}/approve")
+	public String approveOrder(@PathVariable Long id, HttpSession session) {
+		try {
+			orderService.approveOrder(id);
+			session.setAttribute("successMsg", "Order #" + id + " has been approved!");
+		} catch (Exception e) {
+			session.setAttribute("errorMsg", "Error approving order: " + e.getMessage());
+		}
+		return "redirect:/admin/orders";
+	}
+
+	@PostMapping("/orders/{id}/cancel")
+	public String cancelOrder(@PathVariable Long id, HttpSession session) {
+		try {
+			orderService.cancelOrder(id);
+			session.setAttribute("successMsg", "Order #" + id + " has been cancelled!");
+		} catch (Exception e) {
+			session.setAttribute("errorMsg", "Error cancelling order: " + e.getMessage());
+		}
+		return "redirect:/admin/orders";
+	}
+
+	@GetMapping("/revenue")
+	public String viewRevenue(Model model,
+                         @RequestParam(required = false) String startDate,
+                         @RequestParam(required = false) String endDate) {
+    
+        List<Order> confirmedOrders = orderService.getAllOrders().stream()
+                .filter(order -> order.getStatus() == Order.OrderStatus.CONFIRMED)
+                .collect(Collectors.toList());
+
+        // Filter by date range if provided
+        if (startDate != null && endDate != null) {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+            
+            confirmedOrders = confirmedOrders.stream()
+                .filter(order -> {
+                    LocalDate orderDate = order.getCreatedAt().toLocalDate();
+                    return !orderDate.isBefore(start) && !orderDate.isAfter(end);
+                })
+                .collect(Collectors.toList());
+        }
+
+        // Calculate revenue metrics
+        double totalRevenue = confirmedOrders.stream()
+                .mapToDouble(Order::getTotalPrice)
+                .sum();
+                
+        int totalOrders = confirmedOrders.size();
+        
+        double averageOrderValue = totalOrders > 0 ? 
+                totalRevenue / totalOrders : 0;
+
+        // Add to model
+        model.addAttribute("orders", confirmedOrders);
+        model.addAttribute("totalRevenue", String.format("%.2f", totalRevenue));
+        model.addAttribute("totalOrders", totalOrders);
+        model.addAttribute("averageOrderValue", String.format("%.2f", averageOrderValue));
+
+        return "admin/revenue/revenue";
+    }
+
+	@PostMapping("/update-user-role")
+	public String updateUserRole(@RequestParam Long userId, 
+                           @RequestParam String role,
+                           HttpSession session) {
+		try {
+			User user = userService.getUserById(userId);
+			user.setRole(role);
+			userService.updateUserProfile(user);
+			session.setAttribute("successMsg", "User role updated successfully.");
+		} catch (Exception e) {
+			session.setAttribute("errorMsg", "Error updating user role: " + e.getMessage());
+		}
+		return "redirect:/admin/get-all-users";
+	}
 
 }
