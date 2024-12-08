@@ -77,9 +77,19 @@
 							[[${currentLoggedInUserDetails.name}]]
 						</a>
 						<ul class="dropdown-menu">
-							<li><a class="dropdown-item" href="/admin/">Dashboard</a></li>
-							<li><a class="dropdown-item" href="/user/profile">Profile</a></li>
-							<li><a class="dropdown-item" href="#">Another Action</a></li>
+							<th:block th:if="${currentLoggedInUserDetails.role == 'ROLE_USER'}">
+								<li><a class="dropdown-item" href="/user/orders">
+									<i class="fas fa-shopping-bag"></i> My Orders
+								</a></li>
+								<li><a class="dropdown-item" href="/user/profile">
+									<i class="fas fa-user"></i> Profile
+								</a></li>
+							</th:block>
+							<th:block th:if="${currentLoggedInUserDetails.role == 'ROLE_ADMIN'}">
+								<li><a class="dropdown-item" href="/admin/">
+									<i class="fas fa-tachometer-alt"></i> Dashboard
+								</a></li>
+							</th:block>
 						</ul>
 					</li>
 					<li class="nav-item"><a class="nav-link active" aria-current="page" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
