@@ -1,3 +1,9 @@
+-- Tạo cơ sở dữ liệu nếu chưa tồn tại
+CREATE DATABASE IF NOT EXISTS ecoommerce_store;
+
+-- Sử dụng cơ sở dữ liệu vừa tạo
+USE ecoommerce_store;
+
 -- Xoá các bảng nếu đã tồn tại (theo thứ tự phụ thuộc)
 DROP TABLE IF EXISTS `order_item`;
 DROP TABLE IF EXISTS `orders`;
