@@ -1,4 +1,4 @@
-package com.mdtalalwasim.ecommerce.controller;
+package com.mdtalalwasim.ecommerce.controller.rest;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +10,7 @@ import com.mdtalalwasim.ecommerce.service.ProductService;
 
 @RestController
 @RequestMapping("/api/products")
-public class ProductController {
+public class ProductRestController {
     
     @Autowired
     private ProductService productService;

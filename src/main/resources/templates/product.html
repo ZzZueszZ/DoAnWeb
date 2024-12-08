@@ -179,159 +179,395 @@
 </head>
 <body>
 <section>
-	<div class="container-fluid bg-danger p-5">
-		<div class="row">
-			<div class="col-md-8 offset-md-2">
-				<form th:action="@{/products}" method="get">
-					<div class="input-group search-bar">
-						<input class="form-control" type="text" name="search"
-							   th:value="${param.search}" placeholder="Search by product name...">
-						<button class="btn btn-light text-dark ms-3 col-md-2" type="submit">
-							<i class="fa-solid fa-magnifying-glass"></i> Search Product
-						</button>
-					</div>
-				</form>
+	<!-- Hero Search Section -->
+	<div class="search-section">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-md-8">
+					<form th:action="@{/products}" method="get">
+						<div class="search-bar">
+							<input class="form-control" type="text" name="search"
+								   th:value="${param.search}" placeholder="Search for courses...">
+							<button class="btn btn-primary" type="submit">
+								<i class="fa-solid fa-magnifying-glass"></i> Search
+							</button>
+						</div>
+					</form>
+				</div>
 			</div>
 		</div>
 	</div>
 
-	<!-- category side bar start -->
-	<div class="container-fluid">
+	<!-- Main Content -->
+	<div class="container-fluid py-5">
 		<div class="row">
-			<div class="col-md-2 mt-1 p-0">
-				<div class="card shadow-sm p-0 mb-5 bg-body-tertiary rounded">
-					<div class="card-body">
-						<div class="list-group">
-							<p class="fs-5">Category</p>
-							<a href="/products" class="list-group-item list-group-item-action"
-							   th:classappend="${paramValue == ''} ? 'active' : ''"
-							   aria-current="true"> All </a>
-
-							<a href="#" th:each="category : ${allActiveCategory}" th:href="@{'/products?category='+${category.categoryName}}"
-							   th:classappend="${paramValue == category.categoryName} ? 'active' : ''"
-							   class="list-group-item list-group-item-action">[[${category.categoryName}]]</a>
-						</div>
+			<!-- Category Sidebar -->
+			<div class="col-md-3 col-lg-2">
+				<div class="category-sidebar">
+					<h4 class="sidebar-title">Categories</h4>
+					<div class="category-list">
+						<a href="/products" class="category-item"
+						   th:classappend="${paramValue == ''} ? 'active' : ''">
+							<i class="fas fa-th-large"></i>
+							<span>All Courses</span>
+							<span class="count">([[${totalItems}]])</span>
+						</a>
+						
+						<a href="#" th:each="category : ${allActiveCategory}" 
+						   th:href="@{'/products?category='+${category.categoryName}}"
+						   th:classappend="${paramValue == category.categoryName} ? 'active' : ''"
+						   class="category-item">
+							<i class="fas fa-folder"></i>
+							<span>[[${category.categoryName}]]</span>
+						</a>
 					</div>
 				</div>
 			</div>
 
-			<div class="col-md-10">
-				<div class="card mt-1 shadow-sm p-3 mb-5 bg-body-tertiary rounded">
-					<div class="card-body">
-						<p class="fs-3 text-center">Products</p>
-
-						<!-- Hiển thị kết quả tìm kiếm nếu có -->
-						<div th:if="${searchTerm != null}" class="mb-4 text-center">
-							<p class="search-result">
-								Search results for: <span th:text="${searchTerm}"></span>
-							</p>
+			<!-- Products Grid -->
+			<div class="col-md-9 col-lg-10">
+				<div class="products-section">
+					<!-- Search Results -->
+					<div class="section-header">
+						<h2 class="section-title" th:if="${searchTerm == null}">All Courses</h2>
+						<h2 class="section-title" th:if="${searchTerm != null}">
+							Search Results for: <span class="highlight">[[${searchTerm}]]</span>
+						</h2>
+						<div class="courses-meta">
+							<span>Showing [[${totalItems}]] courses</span>
+							<div class="view-options">
+								<select class="form-select" onchange="changePageSize(this.value)">
+									<option th:each="s : ${pageSizes}"
+											th:value="${s}"
+											th:text="'Show ' + ${s}"
+											th:selected="${s == pageSize}">
+									</option>
+								</select>
+							</div>
 						</div>
+					</div>
 
-						<div class="row g-4">
-							<th:block th:if="${not #lists.isEmpty(allActiveProducts)}">
-								<div class="col-md-3" th:each="product : ${allActiveProducts}">
-									<div class="card h-100 product-card shadow-sm">
-										<h5 class="card-title product-title mt-2 px-2"
-											th:text="${product.productTitle}">
-										</h5>
-										<div class="product-img-container">
-											<img alt="product_image"
-												 th:src="@{${product.productImage}}"
-												 class="card-img-top product-img">
-										</div>
-										<div class="card-body d-flex flex-column">
-											<div class="mt-auto">
-												<div class="text-center mb-3">
-													<th:block th:if="${product.discount > 0}">
-														<span class="fs-5 fw-bold text-danger">৳[[${product.discountPrice}]]</span>
-														<br>
-														<span class="text-decoration-line-through text-secondary">
-																৳[[${product.productPrice}]]
-															</span>
-														<span class="badge bg-success ms-2">
-																[[${product.discount}]]% Off
-															</span>
-													</th:block>
-
-													<th:block th:unless="${product.discount > 0}">
-														<span class="fs-5 fw-bold">৳[[${product.productPrice}]]</span>
-													</th:block>
-												</div>
-												<a th:href="@{'/product/'+${product.id}}"
-												   class="btn btn-danger w-100">View Details</a>
-											</div>
-										</div>
+					<!-- Products Grid -->
+					<div class="row g-4">
+						<div class="col-sm-6 col-lg-4 col-xl-3" th:each="product : ${allActiveProducts}">
+							<div class="course-card">
+								<div class="course-image">
+									<img th:src="@{${product.productImage}}" alt="course">
+									<div class="course-overlay">
+										<a th:href="@{'/product/'+${product.id}}" class="btn btn-light">View Details</a>
 									</div>
 								</div>
-							</th:block>
-
-							<div th:if="${#lists.isEmpty(allActiveProducts)}"
-								 class="col-12 text-center">
-								<div class="alert alert-info">
-									<i class="fas fa-info-circle me-2"></i>
-									No products found!
+								<div class="course-content">
+									<h3 class="course-title">
+										<a th:href="@{'/product/'+${product.id}}" th:text="${product.productTitle}"></a>
+									</h3>
+									<div class="course-meta">
+										<span><i class="fas fa-star text-warning"></i> 4.5</span>
+										<span><i class="fas fa-users"></i> 1.2k students</span>
+									</div>
+									<div class="course-price">
+										<th:block th:if="${product.discount > 0}">
+											<span class="price">$[[${product.discountPrice}]]</span>
+											<span class="original-price">$[[${product.productPrice}]]</span>
+											<span class="discount-badge">[[${product.discount}]]% OFF</span>
+										</th:block>
+										<th:block th:unless="${product.discount > 0}">
+											<span class="price">$[[${product.productPrice}]]</span>
+										</th:block>
+									</div>
 								</div>
 							</div>
 						</div>
 
-						<div th:if="${totalPages > 1}" class="row mt-4">
-							<div class="col-12">
-								<div class="d-flex justify-content-center align-items-center mb-3">
-									<span class="me-2">Items per page:</span>
-									<select class="form-select form-select-sm" style="width: auto;"
-											onchange="changePageSize(this.value)">
-										<option th:each="s : ${pageSizes}"
-												th:value="${s}"
-												th:text="${s}"
-												th:selected="${s == pageSize}">
-										</option>
-									</select>
-								</div>
-
-								<nav aria-label="Page navigation">
-									<ul class="pagination justify-content-center">
-										<li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
-											<a class="page-link"
-											   th:href="@{'/products'(page=${currentPage - 1}, size=${pageSize}, category=${paramValue}, search=${searchTerm})}"
-											   tabindex="-1">Previous</a>
-										</li>
-
-										<li class="page-item"
-											th:each="pageNumber : ${#numbers.sequence(1, totalPages)}"
-											th:classappend="${pageNumber == currentPage} ? 'active'">
-											<a class="page-link"
-											   th:href="@{'/products'(page=${pageNumber}, size=${pageSize}, category=${paramValue}, search=${searchTerm})}"
-											   th:text="${pageNumber}"></a>
-										</li>
-
-										<li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
-											<a class="page-link"
-											   th:href="@{'/products'(page=${currentPage + 1}, size=${pageSize}, category=${paramValue}, search=${searchTerm})}">Next</a>
-										</li>
-									</ul>
-								</nav>
-
-								<div class="text-center text-muted">
-									Showing page [[${currentPage}]] of [[${totalPages}]]
-									([[${totalItems}]] items total)
-								</div>
+						<!-- Empty State -->
+						<div th:if="${#lists.isEmpty(allActiveProducts)}" class="col-12">
+							<div class="empty-state">
+								<i class="fas fa-search fa-3x"></i>
+								<h3>No Courses Found</h3>
+								<p>Try adjusting your search or filter to find what you're looking for.</p>
 							</div>
 						</div>
 					</div>
+
+					<!-- Pagination -->
+					<nav th:if="${totalPages > 1}" class="pagination-wrapper">
+						<ul class="pagination">
+							<li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+								<a class="page-link" th:href="@{'/products'(page=${currentPage - 1}, size=${pageSize}, category=${paramValue}, search=${searchTerm})}">
+									<i class="fas fa-chevron-left"></i>
+								</a>
+							</li>
+
+							<li class="page-item" th:each="pageNumber : ${#numbers.sequence(1, totalPages)}"
+								th:classappend="${pageNumber == currentPage} ? 'active'">
+								<a class="page-link" th:href="@{'/products'(page=${pageNumber}, size=${pageSize}, category=${paramValue}, search=${searchTerm})}"
+								   th:text="${pageNumber}"></a>
+							</li>
+
+							<li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+								<a class="page-link" th:href="@{'/products'(page=${currentPage + 1}, size=${pageSize}, category=${paramValue}, search=${searchTerm})}">
+									<i class="fas fa-chevron-right"></i>
+								</a>
+							</li>
+						</ul>
+					</nav>
 				</div>
 			</div>
 		</div>
 	</div>
-	<!-- category side bar end -->
+
+	<style>
+	/* Search Section */
+	.search-section {
+		background: linear-gradient(120deg, #2b4c8c 0%, #1a365d 100%);
+		padding: 3rem 0;
+		margin-bottom: 2rem;
+	}
+
+	.search-bar {
+		position: relative;
+		display: flex;
+		gap: 1rem;
+	}
+
+	.search-bar .form-control {
+		height: 3.5rem;
+		border-radius: 50px;
+		padding: 0 1.5rem;
+		font-size: 1.1rem;
+		border: none;
+		box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+	}
+
+	.search-bar .btn {
+		padding: 0 2rem;
+		border-radius: 50px;
+		font-weight: 500;
+		background: #64b5f6;
+		border: none;
+	}
+
+	.search-bar .btn:hover {
+		background: #42a5f5;
+		transform: translateY(-2px);
+	}
+
+	/* Category Sidebar */
+	.category-sidebar {
+		background: white;
+		border-radius: 15px;
+		padding: 1.5rem;
+		box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+	}
+
+	.sidebar-title {
+		font-size: 1.2rem;
+		font-weight: 600;
+		margin-bottom: 1.5rem;
+		color: #2b4c8c;
+	}
+
+	.category-item {
+		display: flex;
+		align-items: center;
+		padding: 0.75rem 1rem;
+		color: #666;
+		text-decoration: none;
+		border-radius: 8px;
+		transition: all 0.3s ease;
+		margin-bottom: 0.5rem;
+	}
+
+	.category-item i {
+		margin-right: 1rem;
+		color: #64b5f6;
+	}
+
+	.category-item:hover {
+		background: #f8f9fa;
+		color: #2b4c8c;
+	}
+
+	.category-item.active {
+		background: #2b4c8c;
+		color: white;
+	}
+
+	.category-item.active i {
+		color: white;
+	}
+
+	.count {
+		margin-left: auto;
+		background: #f0f0f0;
+		padding: 0.2rem 0.6rem;
+		border-radius: 20px;
+		font-size: 0.9rem;
+	}
+
+	/* Course Cards */
+	.course-card {
+		background: white;
+		border-radius: 15px;
+		overflow: hidden;
+		box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+		transition: all 0.3s ease;
+	}
+
+	.course-card:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+	}
+
+	.course-image {
+		position: relative;
+		height: 200px;
+		overflow: hidden;
+	}
+
+	.course-image img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.3s ease;
+	}
+
+	.course-card:hover .course-image img {
+		transform: scale(1.1);
+	}
+
+	.course-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0,0,0,0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		transition: opacity 0.3s ease;
+	}
+
+	.course-card:hover .course-overlay {
+		opacity: 1;
+	}
+
+	.course-content {
+		padding: 1.5rem;
+	}
+
+	.course-title {
+		font-size: 1.1rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
+		line-height: 1.4;
+	}
+
+	.course-title a {
+		color: #333;
+		text-decoration: none;
+	}
+
+	.course-meta {
+		display: flex;
+		justify-content: space-between;
+		color: #666;
+		font-size: 0.9rem;
+		margin-bottom: 1rem;
+	}
+
+	.course-price {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.price {
+		font-size: 1.2rem;
+		font-weight: 600;
+		color: #2b4c8c;
+	}
+
+	.original-price {
+		text-decoration: line-through;
+		color: #666;
+		font-size: 0.9rem;
+	}
+
+	.discount-badge {
+		background: #4caf50;
+		color: white;
+		padding: 0.2rem 0.6rem;
+		border-radius: 20px;
+		font-size: 0.8rem;
+	}
+
+	/* Empty State */
+	.empty-state {
+		text-align: center;
+		padding: 3rem;
+		color: #666;
+	}
+
+	.empty-state i {
+		color: #ddd;
+		margin-bottom: 1rem;
+	}
+
+	/* Pagination */
+	.pagination-wrapper {
+		margin-top: 3rem;
+	}
+
+	.pagination {
+		gap: 0.5rem;
+	}
+
+	.page-link {
+		border-radius: 50% !important;
+		width: 40px;
+		height: 40px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #666;
+		border: none;
+		transition: all 0.3s ease;
+	}
+
+	.page-item.active .page-link {
+		background: #2b4c8c;
+	}
+
+	.page-link:hover {
+		background: #f8f9fa;
+		color: #2b4c8c;
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.search-section {
+			padding: 2rem 0;
+		}
+
+		.category-sidebar {
+			margin-bottom: 2rem;
+		}
+
+		.course-image {
+			height: 180px;
+		}
+	}
+	</style>
 
 	<script th:inline="javascript">
 		function changePageSize(size) {
 			let currentUrl = new URL(window.location.href);
 			let params = new URLSearchParams(currentUrl.search);
-
 			params.set('size', size);
-			params.set('page', '1'); // Reset về trang 1 khi đổi size
-
+			params.set('page', '1');
 			window.location.href = '/products?' + params.toString();
 		}
 	</script>

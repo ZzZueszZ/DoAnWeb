@@ -6,101 +6,260 @@
 <title>Register</title>
 </head>
 <body>
-	<section>
-		<div class="container mt-5 p-5">
-			<div class="row">
-				<div class="col-md-5 p-5">
-				<img alt="" src="/img/login.jpg" width="100%" height="400px">
-			</div>
-			<div class="col-md-7 mt-3 p-5">
-				<div class="card shadow p-3 mb-5 bg-body rounded">
-					<div class="card-header">
-							<p class="fs-4 text-center">Register</p>
-							<th:block th:if="${session.successMsg}">
-								<p class="text-success fw-bold text-center mt-2">[[${session.successMsg}]]</p>
-								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-							</th:block>
-							<th:block th:if="${session.errorMsg}">
-								<p class="text-danger fw-bold text-center mt-2">[[${session.errorMsg}]]</p>
-								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-							</th:block>
+	<section class="auth-section">
+		<div class="container">
+			<div class="row align-items-center justify-content-center py-5">
+				<div class="col-md-5 d-none d-md-block">
+					<div class="auth-image">
+						<img src="/img/login.jpg" alt="Register" class="img-fluid">
+						<!-- <div class="overlay"></div> -->
+					</div>
+				</div>
+				<div class="col-md-7">
+					<div class="auth-card">
+						<div class="auth-header">
+							<h3>Create Account</h3>
+							<p>Join our community today</p>
 						</div>
-					<div class="card-body">
-						<form action="/save-user" method="post" enctype="multipart/form-data">
-								<div class="row">
-									<div class="col">
-										<label class="form-label">Full Name</label> <input
-											class="form-control" name="name" type="text" />
-									</div>
 
-									<div class="col">
-										<label class="form-label">Mobile</label> <input
-											class="form-control" name="mobile" type="text" />
+						<!-- Alerts -->
+						<div th:if="${session.successMsg}" class="alert alert-success alert-dismissible fade show">
+							<i class="fas fa-check-circle me-2"></i>
+							[[${session.successMsg}]]
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+							<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+						</div>
+						<div th:if="${session.errorMsg}" class="alert alert-danger alert-dismissible fade show">
+							<i class="fas fa-exclamation-circle me-2"></i>
+							[[${session.errorMsg}]]
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+							<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+						</div>
+
+						<form action="/save-user" method="post" enctype="multipart/form-data" class="auth-form">
+							<div class="row g-3">
+								<!-- Name & Mobile -->
+								<div class="col-md-6">
+									<div class="form-floating">
+										<input type="text" class="form-control" id="name" name="name" placeholder="Full Name" required>
+										<label for="name"><i class="fas fa-user me-2"></i>Full Name</label>
 									</div>
 								</div>
-								
-								<div class="col">
-										<label class="form-label">Email</label> <input
-											class="form-control" name="email" type="email" />
-									</div>
-								
-								<div class="row">
-									<div class="col">
-										<label class="form-label">Address</label> <input
-											class="form-control" name="address" type="text" />
-									</div>
-
-									<div class="col">
-										<label class="form-label">City</label> <input
-											class="form-control" name="city" type="text" />
+								<div class="col-md-6">
+									<div class="form-floating">
+										<input type="text" class="form-control" id="mobile" name="mobile" placeholder="Mobile" required>
+										<label for="mobile"><i class="fas fa-phone me-2"></i>Mobile</label>
 									</div>
 								</div>
-								
-								<div class="row">
-									<div class="col">
-										<label class="form-label">State</label> <input
-											class="form-control" name="state" type="text" />
-									</div>
 
-									<div class="col">
-										<label class="form-label">PIN Code</label> <input
-											class="form-control" name="pinCode" type="text" />
+								<!-- Email -->
+								<div class="col-12">
+									<div class="form-floating">
+										<input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+										<label for="email"><i class="fas fa-envelope me-2"></i>Email</label>
 									</div>
 								</div>
-								
-								<div class="row">
-									<div class="col">
-										<label class="form-label">Password</label> <input
-											class="form-control" name="password" type="password" />
-									</div>
 
-									<div class="col">
-										<label class="form-label">Confirm Password</label> <input
-											class="form-control" name="confirmPassword" type="password" />
+								<!-- Address & City -->
+								<div class="col-md-6">
+									<div class="form-floating">
+										<input type="text" class="form-control" id="address" name="address" placeholder="Address" required>
+										<label for="address"><i class="fas fa-map-marker-alt me-2"></i>Address</label>
 									</div>
 								</div>
-								
-								<div class="col">
-										<label class="form-label">Profile Image</label> <input
-											class="form-control" name="file" type="file" />
+								<div class="col-md-6">
+									<div class="form-floating">
+										<input type="text" class="form-control" id="city" name="city" placeholder="City" required>
+										<label for="city"><i class="fas fa-city me-2"></i>City</label>
 									</div>
-								
-								
+								</div>
 
-								<button type="submit" class="btn bg-danger mt-3 text-white col-md-12">Register</button>
+								<!-- State & PIN -->
+								<div class="col-md-6">
+									<div class="form-floating">
+										<input type="text" class="form-control" id="state" name="state" placeholder="State" required>
+										<label for="state"><i class="fas fa-map me-2"></i>State</label>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-floating">
+										<input type="text" class="form-control" id="pinCode" name="pinCode" placeholder="PIN Code" required>
+										<label for="pinCode"><i class="fas fa-map-pin me-2"></i>PIN Code</label>
+									</div>
+								</div>
+
+								<!-- Password Fields -->
+								<div class="col-md-6">
+									<div class="form-floating">
+										<input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+										<label for="password"><i class="fas fa-lock me-2"></i>Password</label>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-floating">
+										<input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+										<label for="confirmPassword"><i class="fas fa-lock me-2"></i>Confirm Password</label>
+									</div>
+								</div>
+
+								<!-- Profile Image -->
+								<div class="col-12">
+									<div class="form-file-group">
+										<label class="form-file-label">
+											<i class="fas fa-image me-2"></i>Profile Image
+										</label>
+										<input type="file" class="form-control" name="file" accept="image/*">
+									</div>
+								</div>
+
+								<!-- Submit Button -->
+								<div class="col-12">
+									<button type="submit" class="btn btn-primary w-100">
+										<i class="fas fa-user-plus me-2"></i>Create Account
+									</button>
+								</div>
+							</div>
 						</form>
 
-						
-					</div>
-					<div class="card-footer text-center">
-						<a href="#" class="text-decoration-none">Forgot Password ?</a><br>Already have an account
-						<a href="/signin" class="text-decoration-none"> Login</a>
+						<div class="auth-footer">
+							<p class="mb-0">Already have an account? 
+								<a href="/signin" class="text-decoration-none">Sign In</a>
+							</p>
+						</div>
 					</div>
 				</div>
 			</div>
-			</div>
 		</div>
+
+		<style>
+		.auth-section {
+			background: #f8f9fa;
+			min-height: 100vh;
+		}
+
+		.auth-card {
+			background: white;
+			padding: 2.5rem;
+			border-radius: 20px;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+		}
+
+		.auth-header {
+			text-align: center;
+			margin-bottom: 2rem;
+		}
+
+		.auth-header h3 {
+			color: #2193b0;
+			margin-bottom: 0.5rem;
+		}
+
+		.auth-header p {
+			color: #6c757d;
+		}
+
+		.auth-image {
+			position: relative;
+			border-radius: 20px;
+			overflow: hidden;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+		}
+
+		.auth-image img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+		.auth-image .overlay {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: linear-gradient(45deg, rgba(33,147,176,0.7), rgba(109,213,237,0.7));
+		}
+
+		.form-floating {
+			margin-bottom: 0.5rem;
+		}
+
+		.form-floating > .form-control {
+			border: 2px solid #e9ecef;
+			border-radius: 10px;
+			height: calc(3.5rem + 2px);
+			padding: 1rem 1rem;
+		}
+
+		.form-floating > .form-control:focus {
+			border-color: #2193b0;
+			box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
+		}
+
+		.form-floating > label {
+			padding: 1rem 1rem;
+			color: #6c757d;
+		}
+
+		.form-file-group {
+			margin-bottom: 1rem;
+		}
+
+		.form-file-label {
+			display: block;
+			margin-bottom: 0.5rem;
+			color: #6c757d;
+			font-size: 0.9rem;
+		}
+
+		.form-control[type="file"] {
+			padding: 0.75rem;
+			border: 2px dashed #e9ecef;
+			border-radius: 10px;
+			cursor: pointer;
+		}
+
+		.btn-primary {
+			background: linear-gradient(135deg, #2193b0, #6dd5ed);
+			border: none;
+			padding: 0.8rem;
+			border-radius: 10px;
+			font-weight: 500;
+			transition: all 0.3s ease;
+		}
+
+		.btn-primary:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 5px 15px rgba(33,147,176,0.4);
+		}
+
+		.auth-footer {
+			text-align: center;
+			margin-top: 2rem;
+		}
+
+		.auth-footer a {
+			color: #2193b0;
+			font-weight: 500;
+		}
+
+		.alert {
+			border: none;
+			border-radius: 10px;
+			padding: 1rem;
+			margin-bottom: 1.5rem;
+		}
+
+		@media (max-width: 768px) {
+			.auth-card {
+				padding: 1.5rem;
+			}
+			
+			.row.g-3 {
+				--bs-gutter-y: 0.75rem;
+			}
+		}
+		</style>
 	</section>
-	
 </body>
 </html>

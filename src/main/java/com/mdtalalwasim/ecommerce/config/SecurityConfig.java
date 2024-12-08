@@ -49,7 +49,7 @@ public class SecurityConfig {
 		http.csrf(csrf -> csrf.disable())
 		.cors(cors->cors.disable())
 		.authorizeHttpRequests(req-> req
-			.requestMatchers("/user/profile", "/user/update-profile", "/user/change-profile-picture").hasAnyRole("USER", "CONSULTANT")
+			.requestMatchers("/user/profile", "/user/update-profile","/user/edit-profile", "/user/change-profile-picture","/user/change-password").hasAnyRole("USER", "CONSULTANT","ADMIN")
 			.requestMatchers("/user/**").hasRole("USER")
 			.requestMatchers("/admin/**").hasRole("ADMIN")
 			.requestMatchers("/consultant/**").hasRole("CONSULTANT")

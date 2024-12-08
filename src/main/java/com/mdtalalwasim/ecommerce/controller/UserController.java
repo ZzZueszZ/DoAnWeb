@@ -255,7 +255,7 @@ public class UserController {
 		model.addAttribute("currentUser", user);
 		return "user/orders";
 	}
-	@PostMapping("/user/review/submit")
+	@PostMapping("/review/submit")
 	public String submitReview(
 			@RequestParam Long productId,
 			@RequestParam Integer rating,

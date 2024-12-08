@@ -3,110 +3,94 @@
 	th:replace="~{base::layout(~{::section})}">
 <head>
 <meta charset="UTF-8">
-<title>Add Product</title>
+<title>Edit User</title>
 </head>
 <body>
 <section>
-	<div class="container p-5">
-			
-			<div class="row">
-				<div class="col-md-6 offset-md-3">
-						<div class="card custom-card-shadow">
-							<div class="card-header text-center fs-4">Edit Product</div>
+	<div class="container-fluid p-4">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="card custom-card-shadow">
+					<div class="card-header">
+						<h5 class="card-title mb-0">Edit User</h5>
+					</div>
+					<div class="card-body">
+						<form th:action="@{/admin/update-user}" method="post" 
+							  enctype="multipart/form-data" th:object="${user}">
 							
-							<!-- Showing message to UI end -->
-							<th:block th:if="${session.successMsg}">
-								<p class="text-success fw-bold text-center mt-2">[[${session.successMsg}]]</p>
-								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-							</th:block>
-							<th:block th:if="${session.errorMsg}">f
-								<p class="text-danger fw-bold text-center mt-2">[[${session.errorMsg}]]</p>
-								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-							</th:block>
-							<!-- Showing message to UI end -->
+							<input type="hidden" th:field="*{id}">
 							
-							<div class="card-body">
-								<form action="/admin/update-product" method="post" enctype="multipart/form-data">
-									<input type="hidden" name="id" th:value="${product.id}">
-									
-									<div class="mb-3">
-										<label>Enter Title</label>
-										<input type="text" name="productTitle" class="form-control" th:value="${product.productTitle}">
-									</div>
-									
-									<div class="mb-3">
-										<label>Description</label>
-										<textarea rows="3" cols="" name="productDescription" class="form-control">[[${product.productDescription}]]</textarea>
-									</div>
-								<div class="row">
-									<div class="mb-3 col">
-										<label>Category</label> <select class="form-control"
-											name="productCategory">
-											<option>[[${product.productCategory}]]</option>
-											<!-- This code-->
-											<!-- <option th:each="category :${allCategoryList}" th:value="${category.id}" th:text="${categor84438443y.categoryName}"></option> -->
-											<!-- or the below both will work -->
-											<option th:each="category :${allCategoryList}">[[${category.categoryName}]]</option>
-
-										</select>
-									</div>
-
-									<div class="mb-3 col">
-										<label>Price</label> <input type="text" name="productPrice"
-											class="form-control" th:value="${product.productPrice}">
-									</div>
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									<label class="form-label">Name</label>
+									<input type="text" class="form-control" th:field="*{name}" required>
 								</div>
-								
-								<div class="row">
-									<div class="mb-3 col">
-										<label>Discount</label> <input type="number" name="discount"
-											class="form-control" th:value="${product.discount}">
-									</div>
-
-									<div class="mb-3 col">
-										<label>Discount Price</label> <input type="text" readonly="readonly"
-											class="form-control" th:value="${product.discountPrice}">
-									</div>
+								<div class="col-md-6 mb-3">
+									<label class="form-label">Email</label>
+									<input type="email" class="form-control" th:field="*{email}" readonly>
 								</div>
-								
-								<div class="mb-3">
-									<label>Status</label>
-									<div class="form-check">
-										<input class="form-check-input" type="radio" name="isActive"
-											id="active" value="true" th:checked="${product.isActive == true}"> <label
-											class="form-check-label" for="active"> Active</label>
-									</div>
-									<div class="form-check">
-										<input class="form-check-input" type="radio" name="isActive" th:checked="${product.isActive == false}"
-											id="inactive" value="false"> <label
-											class="form-check-label" for="inactive"> Inactive</label>
-									</div>
-								</div>
-								
-								
-
-								<div class="row">
-									<div class="mb-3 col">
-										<label>Enter Stock</label> <input type="text"
-											name="productStock" class="form-control" th:value="${product.productStock}">
-									</div>
-
-									<div class="mb-3 col">
-										<label>Upload Image</label> <input type="file"
-											name="file" class="form-control">
-									</div>
-									
-									<div class="mb-3">
-										<img th:src="@{'/img/product_image/'+${product.productImage}}" width="110px;" height="90px;">
-									</div>
-									
-								</div>
-								<button class="btn btn-danger col-md-12">Update</button>	
-							</form> 
 							</div>
-						</div>
+
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									<label class="form-label">Mobile</label>
+									<input type="text" class="form-control" th:field="*{mobile}">
+								</div>
+								<div class="col-md-6 mb-3">
+									<label class="form-label">Role</label>
+									<select class="form-select" th:field="*{role}">
+										<option value="ROLE_USER">User</option>
+										<option value="ROLE_ADMIN">Admin</option>
+										<option value="ROLE_CONSULTANT">Consultant</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-md-12 mb-3">
+									<label class="form-label">Address</label>
+									<input type="text" class="form-control" th:field="*{address}">
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-md-4 mb-3">
+									<label class="form-label">City</label>
+									<input type="text" class="form-control" th:field="*{city}">
+								</div>
+								<div class="col-md-4 mb-3">
+									<label class="form-label">State</label>
+									<input type="text" class="form-control" th:field="*{state}">
+								</div>
+								<div class="col-md-4 mb-3">
+									<label class="form-label">Pin Code</label>
+									<input type="text" class="form-control" th:field="*{pinCode}">
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									<label class="form-label">Profile Image</label>
+									<input type="file" class="form-control" name="profileImage">
+									<small class="text-muted">Leave empty to keep current image</small>
+								</div>
+								<div class="col-md-6 mb-3">
+									<label class="form-label">Current Image</label><br>
+									<img th:src="@{'/img/profile_img/'+${user.profileImage}}" 
+										 class="rounded" width="100px" height="100px" 
+										 alt="Current Profile Image">
+								</div>
+							</div>
+
+							<div class="text-end">
+								<a th:href="@{/admin/get-all-users}" class="btn btn-secondary">Cancel</a>
+								<button type="submit" class="btn btn-primary">Update User</button>
+							</div>
+						</form>
+					</div>
 				</div>
 			</div>
+		</div>
 	</div>
 </section>
 </body>

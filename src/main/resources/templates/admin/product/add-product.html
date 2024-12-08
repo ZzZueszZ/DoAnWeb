@@ -6,39 +6,47 @@
 <title>Add Product</title>
 </head>
 <body>
-<section>
-	<div class="container p-5">
-			
-			<div class="row">
-				<div class="col-md-6 offset-md-3">
-						<div class="card custom-card-shadow">
-							<div class="card-header text-center fs-4">Add Product</div>
-							
-							<!-- Showing message to UI end -->
-							<th:block th:if="${session.successMsg}">
-								<p class="text-success fw-bold text-center mt-2">[[${session.successMsg}]]</p>
-								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-							</th:block>
-							<th:block th:if="${session.errorMsg}">f
-								<p class="text-danger fw-bold text-center mt-2">[[${session.errorMsg}]]</p>
-								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-							</th:block>
-							<!-- Showing message to UI end -->
-							
-							<div class="card-body">
-								<form action="/admin/save-product" method="post" enctype="multipart/form-data">
-									<div class="mb-3">
-										<label>Enter Title</label>
-										<input type="text" name="productTitle" class="form-control">
-									</div>
-									
-									<div class="mb-3">
-										<label>Description</label>
-										<textarea rows="3" cols="" name="productDescription" class="form-control"></textarea>
-									</div>
+<section class="product-management">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-lg-8">
+				<!-- Back Button -->
+				<div class="mb-4">
+					<a href="/admin/product-list" class="btn btn-outline-primary">
+						<i class="fas fa-arrow-left me-2"></i>Back to Products
+					</a>
+				</div>
 
-								<div class="mb-3">
-									<label>Category</label>
+				<div class="product-card">
+					<div class="card-header">
+						<h4><i class="fas fa-plus-circle me-2"></i>Add New Product</h4>
+					</div>
+					
+					<div class="card-body p-4">
+						<!-- Alert Messages -->
+						<div th:if="${session.successMsg}" class="alert alert-success alert-dismissible fade show">
+							<i class="fas fa-check-circle me-2"></i>
+							<span>[[${session.successMsg}]]</span>
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+							<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+						</div>
+						<div th:if="${session.errorMsg}" class="alert alert-danger alert-dismissible fade show">
+							<i class="fas fa-exclamation-circle me-2"></i>
+							<span>[[${session.errorMsg}]]</span>
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+							<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+						</div>
+
+						<form action="/admin/save-product" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									<label class="form-label">Product Title</label>
+									<input type="text" name="productTitle" class="form-control" required>
+									<div class="invalid-feedback">Please enter a product title</div>
+								</div>
+								
+								<div class="col-md-6 mb-3">
+									<label class="form-label">Category</label>
 									<select name="category.id" class="form-control" required>
 										<option value="">Select Category</option>
 										<option th:each="cat : ${categories}" 
@@ -46,45 +54,182 @@
 												th:text="${cat.categoryName}">
 										</option>
 									</select>
+									<div class="invalid-feedback">Please select a category</div>
 								</div>
-
-								<div class="mb-3">
-									<label>Price</label> <input type="text" name="productPrice"
-										class="form-control">
-								</div>
-
-								<div class="mb-3">
-									<label>Status</label>
-									<div class="form-check">
-										<input class="form-check-input" type="radio" name="isActive"
-											id="active" value="true" checked> <label
-											class="form-check-label" for="active"> Active</label>
-									</div>
-									<div class="form-check">
-										<input class="form-check-input" type="radio" name="isActive"
-											id="inactive" value="false"> <label
-											class="form-check-label" for="inactive"> Inactive</label>
-									</div>
-								</div>
-
-								<div class="row">
-									<div class="mb-3 col">
-										<label>Enter Stock</label> <input type="text"
-											name="productStock" class="form-control">
-									</div>
-
-									<div class="mb-3 col">
-										<label>Upload Image</label>
-										<input type="file" name="file" class="form-control">
-									</div>
-								</div>
-								<button class="btn btn-danger col-md-12">Submit</button>	
-							</form> 
 							</div>
-						</div>
+
+							<div class="mb-3">
+								<label class="form-label">Description</label>
+								<textarea name="productDescription" class="form-control" rows="4" required></textarea>
+								<div class="invalid-feedback">Please enter a description</div>
+							</div>
+
+							<div class="row">
+								<div class="col-md-4 mb-3">
+									<label class="form-label">Price</label>
+									<div class="input-group">
+										<span class="input-group-text">$</span>
+										<input type="number" name="productPrice" class="form-control" required min="0" step="0.01">
+									</div>
+									<div class="invalid-feedback">Please enter a valid price</div>
+								</div>
+								
+								<div class="col-md-4 mb-3">
+									<label class="form-label">Stock</label>
+									<input type="number" name="productStock" class="form-control" required min="0">
+									<div class="invalid-feedback">Please enter a valid stock quantity</div>
+								</div>
+
+								<div class="col-md-4 mb-3">
+									<label class="form-label">Status</label>
+									<div class="status-toggle">
+										<div class="form-check">
+											<input type="radio" name="isActive" class="form-check-input" 
+												   id="active" value="true" checked>
+											<label class="form-check-label" for="active">
+												<i class="fas fa-check-circle text-success me-1"></i>Active
+											</label>
+										</div>
+										<div class="form-check">
+											<input type="radio" name="isActive" class="form-check-input" 
+												   id="inactive" value="false">
+											<label class="form-check-label" for="inactive">
+												<i class="fas fa-times-circle text-danger me-1"></i>Inactive
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="mb-4">
+								<label class="form-label">Product Image</label>
+								<input type="file" name="file" class="form-control" accept="image/*" required>
+								<div class="invalid-feedback">Please select an image</div>
+								<div class="image-preview mt-2">
+									<!-- Image preview will be shown here -->
+								</div>
+							</div>
+
+							<div class="d-grid">
+								<button type="submit" class="btn btn-primary btn-lg">
+									<i class="fas fa-save me-2"></i>Save Product
+								</button>
+							</div>
+						</form>
+					</div>
 				</div>
 			</div>
+		</div>
 	</div>
+
+	<style>
+		.product-management {
+			background: #f8f9fa;
+			min-height: 100vh;
+			padding: 2rem 0;
+		}
+		
+		.product-card {
+			background: white;
+			border-radius: 15px;
+			box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+			transition: all 0.3s ease;
+		}
+		
+		.card-header {
+			background: linear-gradient(135deg, #2193b0, #6dd5ed);
+			color: white;
+			border-radius: 15px 15px 0 0 !important;
+			padding: 1.5rem;
+			border: none;
+		}
+		
+		.form-control {
+			border: 2px solid #e9ecef;
+			border-radius: 10px;
+			padding: 0.8rem 1rem;
+			transition: all 0.3s ease;
+		}
+		
+		.form-control:focus {
+			border-color: #2193b0;
+			box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
+		}
+		
+		.form-label {
+			font-weight: 500;
+			color: #2b4c8c;
+			margin-bottom: 0.5rem;
+		}
+		
+		.btn-primary {
+			background: linear-gradient(135deg, #2193b0, #6dd5ed);
+			border: none;
+			border-radius: 10px;
+			padding: 0.8rem 1.5rem;
+			font-weight: 500;
+			transition: all 0.3s ease;
+		}
+		
+		.btn-primary:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 5px 15px rgba(33,147,176,0.3);
+		}
+		
+		.image-preview img {
+			max-width: 200px;
+			border-radius: 10px;
+			margin-top: 1rem;
+		}
+		
+		.status-toggle {
+			background: #f8f9fa;
+			padding: 1rem;
+			border-radius: 10px;
+		}
+		
+		@media (max-width: 768px) {
+			.product-management {
+				padding: 1rem;
+			}
+			
+			.card-header {
+				padding: 1rem;
+			}
+		}
+	</style>
+
+	<script>
+	// Form validation
+	(function() {
+		'use strict'
+		var forms = document.querySelectorAll('.needs-validation')
+		Array.prototype.slice.call(forms).forEach(function(form) {
+			form.addEventListener('submit', function(event) {
+				if (!form.checkValidity()) {
+					event.preventDefault()
+					event.stopPropagation()
+				}
+				form.classList.add('was-validated')
+			}, false)
+		})
+	})()
+
+	// Image preview
+	document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+		const file = e.target.files[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = function(e) {
+				const preview = document.querySelector('.image-preview');
+				preview.innerHTML = `
+					<img src="${e.target.result}" class="img-thumbnail" alt="Preview">
+				`;
+			}
+			reader.readAsDataURL(file);
+		}
+	});
+	</script>
 </section>
 </body>
 </html>

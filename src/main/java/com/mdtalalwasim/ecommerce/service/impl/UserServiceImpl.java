@@ -22,6 +22,7 @@ import com.mdtalalwasim.ecommerce.service.UserService;
 import com.mdtalalwasim.ecommerce.utils.AppConstant;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService{
 
 	@Autowired
@@ -33,18 +34,15 @@ public class UserServiceImpl implements UserService{
 
 	@Override
 	public User saveUser(User user) {
-		System.out.println("user obje :"+user.toString());
-		user.setRole("ROLE_USER");
-		user.setIsEnable(true);
-		user.setAccountStatusNonLocked(true);
-		user.setAccountFailedAttemptCount(0);
-		user.setAccountLockTime(null);
-		String encodedPassword = passwordEncoder.encode(user.getPassword());
-		user.setPassword(encodedPassword);
 		try {
-			User saveUser = userRepository.save(user);
-
-			return saveUser;
+			user.setRole("ROLE_USER");
+			user.setIsEnable(true);
+			user.setAccountStatusNonLocked(true);
+			user.setAccountFailedAttemptCount(0);
+			user.setAccountLockTime(null);
+			user.setPassword(passwordEncoder.encode(user.getPassword()));
+			
+			return userRepository.save(user);
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to create user", e);
 		}
@@ -52,34 +50,38 @@ public class UserServiceImpl implements UserService{
 
 	@Override
 	public User getUserByEmail(String email) {
-		// TODO Auto-generated method stub
-		return userRepository.findByEmail(email);
+		User user = userRepository.findByEmail(email);
+		if (user == null) {
+			throw new RuntimeException("User not found with email: " + email);
+		}
+		return user;
 	}
 
 	@Override
-	public User getUserById(long id) {
-		return userRepository.findById(id).orElse(null);
+	public User getUserById(Long id) {
+		return userRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 	}
+
 
 	@Override
 	public List<User> getAllUsersByRole(String role) {
-		// TODO Auto-generated method stub
 		return userRepository.findByRole(role);
 	}
 
 	@Override
 	public Boolean updateUserStatus(Boolean status, Long id) {
-		Optional<User> userById = userRepository.findById(id);
-		if (userById.isPresent()) {
-			User user = userById.get();
+		try {
+			User user = getUserById(id);
+			if ("ROLE_ADMIN".equals(user.getRole())) {
+				throw new RuntimeException("Cannot modify admin account status");
+			}
 			user.setIsEnable(status);
 			userRepository.save(user);
-
 			return true;
-		} else {
+		} catch (Exception e) {
 			return false;
 		}
-
 	}
 
 	@Override
@@ -170,7 +172,7 @@ public class UserServiceImpl implements UserService{
 				throw new RuntimeException("Invalid user data");
 			}
 
-			// Lấy user hiện tại t� DB
+			// Lấy user hiện tại t DB
 			User existingUser = userRepository.findById(user.getId())
 				.orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -194,31 +196,84 @@ public class UserServiceImpl implements UserService{
 	@Transactional
 	public void changeProfilePicture(String email, MultipartFile file) throws IOException {
 		User user = getUserByEmail(email);
-		if(user == null) {
-			throw new RuntimeException("User not found");
-		}
-
-		// Xử lý upload file
-		String fileName = file.getOriginalFilename();
+		
+		String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
 		Path uploadPath = Paths.get("uploads/profile/");
 		
 		if (!Files.exists(uploadPath)) {
-			Files.createDirectories(uploadPath);
+				Files.createDirectories(uploadPath);
 		}
 
 		try (InputStream inputStream = file.getInputStream()) {
-			Path filePath = uploadPath.resolve(fileName);
-			Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-			
-			// Cập nhật đường dẫn ảnh trong DB
-			user.setProfileImage("/uploads/profile/" + fileName);
-			userRepository.save(user);
+				Path filePath = uploadPath.resolve(fileName);
+				Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+				
+				if (user.getProfileImage() != null) {
+						Path oldFilePath = uploadPath.resolve(user.getProfileImage().substring("/uploads/profile/".length()));
+						Files.deleteIfExists(oldFilePath);
+				}
+				
+				user.setProfileImage("/uploads/profile/" + fileName);
+				userRepository.save(user);
 		}
 	}
 
 	@Override
 	public List<User> getAllUsers() {
 		return userRepository.findAll();
+	}
+
+	@Override
+	public void updateUser(User user) {
+		// Validate user
+		if (user == null || user.getId() == null) {
+			throw new RuntimeException("Invalid user data");
+		}
+
+		User existingUser = getUserById(user.getId());
+		
+		user.setEmail(existingUser.getEmail());
+		user.setPassword(existingUser.getPassword());
+		
+		user.setAccountStatusNonLocked(existingUser.getAccountStatusNonLocked());
+		user.setAccountFailedAttemptCount(existingUser.getAccountFailedAttemptCount());
+		user.setAccountLockTime(existingUser.getAccountLockTime());
+		user.setResetTokens(existingUser.getResetTokens());
+
+		existingUser.setName(user.getName());
+		existingUser.setMobile(user.getMobile());
+		existingUser.setAddress(user.getAddress());
+		existingUser.setCity(user.getCity());
+		existingUser.setState(user.getState());
+		existingUser.setPinCode(user.getPinCode());
+		existingUser.setRole(user.getRole());
+		
+		if (user.getProfileImage() != null && !user.getProfileImage().equals(existingUser.getProfileImage())) {
+			existingUser.setProfileImage(user.getProfileImage());
+		}
+
+		userRepository.save(existingUser);
+	}
+
+	@Override
+	public void deleteUser(Long id) {
+		User user = getUserById(id);
+		
+		if ("ROLE_ADMIN".equals(user.getRole())) {
+			throw new RuntimeException("Cannot delete admin user");
+		}
+		
+		if (user.getProfileImage() != null) {
+			try {
+				Path imagePath = Paths.get("uploads/profile/")
+					.resolve(user.getProfileImage().substring("/uploads/profile/".length()));
+				Files.deleteIfExists(imagePath);
+			} catch (IOException e) {
+				System.err.println("Error deleting profile image: " + e.getMessage());
+			}
+		}
+		
+		userRepository.deleteById(id);
 	}
 
 }

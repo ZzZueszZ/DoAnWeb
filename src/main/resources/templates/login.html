@@ -6,47 +6,173 @@
 <title>Insert title here</title>
 </head>
 <body>
-	<section>
-		<div class="container mt-5 p-5">
-			<div class="row">
-				<div class="col-md-6 p-5">
-				<img alt="" src="/img/login.jpg" width="100%" height="400px">
-			</div>
-			<div class="col-md-6 mt-3 p-5">
-				<div class="card shadow p-3 mb-5 bg-body rounded">
-						<div class="card-header">
-							<p class="fs-4 text-center">Login</p>
-
-							<!-- Logout and Signin Error Alert -->
-							<div th:if="${param.error}" class="alert alert-danger text-center">[[${session.SPRING_SECURITY_LAST_EXCEPTION.message}]]</div>
-							<div th:if="${param.logout}" class="alert alert-success text-center">Logout Successfully.</div>
-							<!-- Logout and Signin Error Alert -->		
-
+	<section class="auth-section">
+		<div class="container">
+			<div class="row align-items-center justify-content-center min-vh-100">
+				<div class="col-md-6 d-none d-md-block">
+					<div class="auth-image">
+						<img src="/img/login.jpg" alt="Login" class="img-fluid">
+						<!-- <div class="overlay"></div> -->
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="auth-card">
+						<div class="auth-header">
+							<h3>Welcome Back!</h3>
+							<p>Please sign in to continue</p>
 						</div>
-						<div class="card-body">
-						<form action="/login" method="post">
-							<div class="mb-3">
-								<label class="form-label">Email</label> <input
-									class="form-control" name="username" type="email" />
+
+						<!-- Alerts -->
+						<div th:if="${param.error}" class="alert alert-danger alert-dismissible fade show">
+							<i class="fas fa-exclamation-circle me-2"></i>
+							[[${session.SPRING_SECURITY_LAST_EXCEPTION.message}]]
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+						</div>
+						<div th:if="${param.logout}" class="alert alert-success alert-dismissible fade show">
+							<i class="fas fa-check-circle me-2"></i>
+							Logout Successfully.
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+						</div>
+
+						<form action="/login" method="post" class="auth-form">
+							<div class="form-floating mb-3">
+								<input type="email" class="form-control" id="email" name="username" placeholder="name@example.com" required>
+								<label for="email"><i class="fas fa-envelope me-2"></i>Email address</label>
 							</div>
 							
-							<div class="mb-3">
-								<label class="form-label">Password</label> <input
-									class="form-control" name="password" type="password" />
+							<div class="form-floating mb-4">
+								<input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+								<label for="password"><i class="fas fa-lock me-2"></i>Password</label>
 							</div>
-							<button type="submit" class="btn bg-danger text-white col-md-12">Submit</button>
+
+							<button type="submit" class="btn btn-primary w-100 mb-3">
+								<i class="fas fa-sign-in-alt me-2"></i>Sign In
+							</button>
 						</form>
 
-						
-					</div>
-					<div class="card-footer text-center">
-						<a href="/forgot-password" class="text-decoration-none">Forgot Password ?</a><br>Don't have an account?
-						<a href="/register" class="text-decoration-none"> Create One</a>
+						<div class="auth-footer">
+							<a href="/forgot-password" class="text-decoration-none">Forgot Password?</a>
+							<p class="mb-0">Don't have an account? 
+								<a href="/register" class="text-decoration-none">Create One</a>
+							</p>
+						</div>
 					</div>
 				</div>
 			</div>
-			</div>
 		</div>
+
+		<style>
+		.auth-section {
+			background: #f8f9fa;
+			min-height: 100vh;
+		}
+
+		.auth-card {
+			background: white;
+			padding: 2.5rem;
+			border-radius: 20px;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+		}
+
+		.auth-header {
+			text-align: center;
+			margin-bottom: 2rem;
+		}
+
+		.auth-header h3 {
+			color: #2193b0;
+			margin-bottom: 0.5rem;
+		}
+
+		.auth-header p {
+			color: #6c757d;
+		}
+
+		.auth-image {
+			position: relative;
+			border-radius: 20px;
+			overflow: hidden;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+		}
+
+		.auth-image img {
+			width: 100%;
+			height: 600px;
+			object-fit: cover;
+		}
+
+		.auth-image .overlay {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: linear-gradient(45deg, rgba(33,147,176,0.7), rgba(109,213,237,0.7));
+		}
+
+		.form-floating > .form-control {
+			border: 2px solid #e9ecef;
+			border-radius: 10px;
+			height: calc(3.5rem + 2px);
+			padding: 1rem 1rem;
+		}
+
+		.form-floating > .form-control:focus {
+			border-color: #2193b0;
+			box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
+		}
+
+		.form-floating > label {
+			padding: 1rem 1rem;
+		}
+
+		.btn-primary {
+			background: linear-gradient(135deg, #2193b0, #6dd5ed);
+			border: none;
+			padding: 0.8rem;
+			border-radius: 10px;
+			font-weight: 500;
+			transition: all 0.3s ease;
+		}
+
+		.btn-primary:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 5px 15px rgba(33,147,176,0.4);
+		}
+
+		.auth-footer {
+			text-align: center;
+			margin-top: 2rem;
+		}
+
+		.auth-footer a {
+			color: #2193b0;
+			font-weight: 500;
+		}
+
+		.alert {
+			border: none;
+			border-radius: 10px;
+			padding: 1rem;
+			margin-bottom: 1.5rem;
+		}
+
+		.alert-danger {
+			background: #ffe5e5;
+			color: #ff3b3b;
+		}
+
+		.alert-success {
+			background: #e5ffe5;
+			color: #28a745;
+		}
+
+		@media (max-width: 768px) {
+			.auth-card {
+				padding: 1.5rem;
+			}
+		}
+		</style>
 	</section>
 
 </body>

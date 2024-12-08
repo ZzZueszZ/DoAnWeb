@@ -6,64 +6,257 @@
 <title>Category</title>
 </head>
 <body>
-	<section>
-		<div class="container-fluid p-5">
-			<div class="row">
-				<div class="col-md-4 offset-md-4">
-					<div class="card custom-card-shadow">
-						<div class="card-header text-center">
-							<p class="fs-4">Add Category</p>
-							<th:block th:if="${session.successMsg}">
-								<p class="text-success fw-bold text-center mt-2">[[${session.successMsg}]]</p>
-								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-							</th:block>
-							<th:block th:if="${session.errorMsg}">
-								<p class="text-danger fw-bold text-center mt-2">[[${session.errorMsg}]]</p>
-								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-							</th:block>
-
+	<section class="category-management">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-md-6">
+					<div class="category-card">
+						<div class="card-header">
+							<h4><i class="fas fa-edit me-2"></i>Edit Category</h4>
 						</div>
+						<div class="card-body p-4">
+							<!-- Alert Messages -->
+							<div th:if="${session.successMsg}" class="alert alert-success">
+								<i class="fas fa-check-circle"></i>
+								<span>[[${session.successMsg}]]</span>
+								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+							</div>
+							<div th:if="${session.errorMsg}" class="alert alert-danger">
+								<i class="fas fa-exclamation-circle"></i>
+								<span>[[${session.errorMsg}]]</span>
+								<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+							</div>
 
-						<div class="card-body">
+							<!-- Edit Form -->
 							<form action="/admin/update-category" method="post" enctype="multipart/form-data">
+								<input type="hidden" name="id" th:value="${category.id}">
+								
 								<div class="mb-3">
-									<label>Category Name</label> <input type="text"
-										name="categoryName" class="form-control" th:value="${category.categoryName}">
+									<label class="form-label">Category Name</label>
+									<input type="text" name="categoryName" class="form-control" 
+										   th:value="${category.categoryName}" required>
 								</div>
-								<input type="hidden" name="id" class="form-control" th:value="${category.id}">
-								<div class="mb-3">
-									<label>Status</label>
+
+								<div class="status-toggle">
+									<label class="form-label d-block">Status</label>
 									<div class="form-check">
-										<input class="form-check-input" type="radio"
-											name="isActive" id="active" value="true" th:checked="${category.isActive == true}"> <label
-											class="form-check-label" for="active">
-											Active</label>
+										<input class="form-check-input" type="radio" name="isActive" 
+											   id="active" value="true" th:checked="${category.isActive == true}">
+										<label class="form-check-label" for="active">Active</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="radio"
-											name="isActive" id="inactive" value="false" th:checked="${category.isActive == false}">
-										<label class="form-check-label" for="inactive">
-											Inactive</label>
+										<input class="form-check-input" type="radio" name="isActive" 
+											   id="inactive" value="false" th:checked="${category.isActive == false}">
+										<label class="form-check-label" for="inactive">Inactive</label>
 									</div>
 								</div>
 
-
-
-								<div class="mb-3 col">
-									<label>Upload Image</label> <input type="file"
-										name="file" class="form-control">
+								<div class="mb-3">
+									<label class="form-label">Category Image</label>
+									<input type="file" name="file" class="form-control" accept="image/*">
+									<div class="image-preview">
+										<p class="text-muted mb-2">Current Image:</p>
+										<img th:src="@{'/img/category/'+${category.categoryImage}}" 
+											 alt="Current Category Image">
+									</div>
 								</div>
-								<img alt="categoryImage" th:src="@{'/img/category/'+${category.categoryImage}}" width="100px" height="90px">
 
-								<button class="btn btn-danger col-md-12 mt-3">Update</button>
+								<div class="d-grid">
+									<button type="submit" class="btn btn-primary">
+										<i class="fas fa-save me-2"></i>Update Category
+									</button>
+								</div>
 							</form>
 						</div>
 					</div>
 				</div>
-
-				
 			</div>
 		</div>
+		<style>
+			.category-management {
+				background: #f8f9fa;
+				min-height: 100vh;
+				padding: 2rem 0;
+			}
+			
+			.category-card {
+				background: white;
+				border-radius: 15px;
+				box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+				transition: all 0.3s ease;
+			}
+			
+			.category-card:hover {
+				transform: translateY(-5px);
+				box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+			}
+			
+			.card-header {
+				background: linear-gradient(135deg, #2193b0, #6dd5ed);
+				color: white;
+				border-radius: 15px 15px 0 0 !important;
+				padding: 1.5rem;
+				border: none;
+			}
+			
+			.card-header h4 {
+				margin: 0;
+				font-weight: 600;
+			}
+			
+			.form-control {
+				border: 2px solid #e9ecef;
+				border-radius: 10px;
+				padding: 0.8rem 1rem;
+				transition: all 0.3s ease;
+			}
+			
+			.form-control:focus {
+				border-color: #2193b0;
+				box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
+			}
+			
+			.form-label {
+				font-weight: 500;
+				color: #2b4c8c;
+				margin-bottom: 0.5rem;
+			}
+			
+			.btn-primary {
+				background: linear-gradient(135deg, #2193b0, #6dd5ed);
+				border: none;
+				border-radius: 10px;
+				padding: 0.8rem 1.5rem;
+				font-weight: 500;
+				transition: all 0.3s ease;
+			}
+			
+			.btn-primary:hover {
+				transform: translateY(-2px);
+				box-shadow: 0 5px 15px rgba(33,147,176,0.3);
+			}
+			
+			.image-preview {
+				border-radius: 10px;
+				border: 2px dashed #e9ecef;
+				padding: 1rem;
+				text-align: center;
+				margin-top: 1rem;
+			}
+			
+			.image-preview img {
+				max-width: 150px;
+				border-radius: 8px;
+				margin-top: 1rem;
+			}
+			
+			.status-toggle {
+				display: flex;
+				gap: 1rem;
+				padding: 1rem;
+				background: #f8f9fa;
+				border-radius: 10px;
+				margin: 1rem 0;
+			}
+			
+			.status-toggle .form-check {
+				padding: 0.5rem 1rem;
+				border-radius: 8px;
+				transition: all 0.3s ease;
+			}
+			
+			.status-toggle .form-check:hover {
+				background: white;
+			}
+			
+			.alert {
+				border-radius: 10px;
+				border: none;
+				padding: 1rem;
+				margin-bottom: 1rem;
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+			}
+			
+			.alert i {
+				font-size: 1.25rem;
+			}
+			
+			/* DataTable Customization */
+			.dataTables_wrapper .dataTables_filter input {
+				border: 2px solid #e9ecef;
+				border-radius: 10px;
+				padding: 0.5rem 1rem;
+			}
+			
+			.dataTables_wrapper .dataTables_length select {
+				border: 2px solid #e9ecef;
+				border-radius: 8px;
+				padding: 0.5rem;
+			}
+			
+			.table {
+				border-radius: 10px;
+				overflow: hidden;
+			}
+			
+			.table th {
+				background: #f8f9fa;
+				font-weight: 600;
+				color: #2b4c8c;
+			}
+			
+			.table td {
+				vertical-align: middle;
+			}
+			
+			.action-buttons {
+				display: flex;
+				gap: 0.5rem;
+			}
+			
+			.action-buttons .btn {
+				padding: 0.5rem;
+				border-radius: 8px;
+				transition: all 0.3s ease;
+			}
+			
+			.action-buttons .btn:hover {
+				transform: translateY(-2px);
+			}
+			
+			@media (max-width: 768px) {
+				.category-management {
+					padding: 1rem;
+				}
+				
+				.card-header {
+					padding: 1rem;
+				}
+				
+				.action-buttons {
+					flex-direction: column;
+				}
+			}
+			</style>
 	</section>
+
+	<script>
+	// Image preview functionality
+	document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+		const file = e.target.files[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = function(e) {
+				const preview = document.querySelector('#imagePreview');
+				preview.innerHTML = `
+					<img src="${e.target.result}" alt="Preview" class="img-fluid">
+				`;
+			}
+			reader.readAsDataURL(file);
+		}
+	});
+	</script>
 </body>
 </html>

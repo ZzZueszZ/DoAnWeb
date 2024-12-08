@@ -2,6 +2,7 @@ package com.mdtalalwasim.ecommerce.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,9 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.format.datetime.DateFormatter;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -262,34 +265,50 @@ public class AdminViewController {
 	//get all users
 	@GetMapping("/get-all-users")
 	public String getAllUser(Model model) {
-		// Get all users except admins
-		List<User> allUsers = userService.getAllUsers().stream()
-				.filter(user -> !user.getRole().equals("ROLE_ADMIN"))
-				.collect(Collectors.toList());
-				
-		// Format date for each user
-		for (User user : allUsers) {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-			String format = formatter.format(user.getCreatedAt());
-			model.addAttribute("formattedDateTimeCreatedAt", format);
+		try {
+			// Get all users except current admin
+			String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+			List<User> allUsers = userService.getAllUsers().stream()
+					.filter(user -> !user.getEmail().equals(currentUserEmail))
+					.collect(Collectors.toList());
+					
+			model.addAttribute("allUsers", allUsers);
+			return "/admin/users/user-home";
+		} catch (Exception e) {
+			model.addAttribute("errorMsg", "Error loading users: " + e.getMessage());
+			return "redirect:/admin/";
 		}
-		
-		model.addAttribute("allUsers", allUsers);
-		return "/admin/users/user-home";
 	}
 	
 
 	@GetMapping("/edit-user-status")
-	public String editUser(@RequestParam("status") Boolean status, @RequestParam("id") Long id, Model model, HttpSession session) {
-		Boolean updateUserStatus = userService.updateUserStatus(status,id);
-		if(updateUserStatus == true) {
-			session.setAttribute("successMsg", "User Status Updated Successfully.");
-		}
-		else {
-			session.setAttribute("errorMsg", "Something Wrong on server while Updating User status");
+	public String editUserStatus(@RequestParam("status") Boolean status, 
+							   @RequestParam("id") Long id, 
+							   HttpSession session) {
+		try {
+			// Kiểm tra không cho khóa chính mình
+			String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+			User userToUpdate = userService.getUserById(id);
+			
+			if(userToUpdate.getEmail().equals(currentUserEmail)) {
+				throw new RuntimeException("Cannot change your own status");
+			}
+			
+			// Không cho khóa admin khác
+			if("ROLE_ADMIN".equals(userToUpdate.getRole())) {
+				throw new RuntimeException("Cannot modify admin account status");
+			}
+			
+			Boolean updated = userService.updateUserStatus(status, id);
+			if(updated) {
+				session.setAttribute("successMsg", "User status updated successfully!");
+			} else {
+				session.setAttribute("errorMsg", "Failed to update user status");
+			}
+		} catch (Exception e) {
+			session.setAttribute("errorMsg", "Error updating status: " + e.getMessage());
 		}
 		return "redirect:/admin/get-all-users";
-		
 	}
 	
 	@GetMapping("/orders")
@@ -413,6 +432,93 @@ public class AdminViewController {
 			session.setAttribute("successMsg", "User role updated successfully.");
 		} catch (Exception e) {
 			session.setAttribute("errorMsg", "Error updating user role: " + e.getMessage());
+		}
+		return "redirect:/admin/get-all-users";
+	}
+
+	@GetMapping("/edit-user/{id}")
+	public String showEditUserForm(@PathVariable Long id, Model model) {
+		try {
+			User user = userService.getUserById(id);
+			
+			// Không cho edit admin khác
+			if("ROLE_ADMIN".equals(user.getRole())) {
+				String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+				if(!user.getEmail().equals(currentUserEmail)) {
+					throw new RuntimeException("Cannot edit other admin accounts");
+				}
+			}
+			
+			model.addAttribute("user", user);
+			return "admin/users/edit-user";
+		} catch (Exception e) {
+			model.addAttribute("errorMsg", e.getMessage());
+			return "redirect:/admin/get-all-users";
+		}
+	}
+
+	@PostMapping("/update-user")
+	public String updateUser(@ModelAttribute User user, 
+							@RequestParam(required = false) MultipartFile profileImage,
+							HttpSession session) {
+		try {
+			// Kiểm tra quyền
+			String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+			User existingUser = userService.getUserById(user.getId());
+			
+			if("ROLE_ADMIN".equals(existingUser.getRole()) && 
+			   !existingUser.getEmail().equals(currentUserEmail)) {
+				throw new RuntimeException("Cannot modify other admin accounts");
+			}
+
+			// Validate role
+			if(user.getRole() == null || user.getRole().isEmpty()) {
+				throw new RuntimeException("Role cannot be empty");
+			}
+
+			// Xử lý upload ảnh mới
+			if (profileImage != null && !profileImage.isEmpty()) {
+				String uploadDir = "uploads/profile/";
+				Path uploadPath = Paths.get(uploadDir);
+				
+				if (!Files.exists(uploadPath)) {
+					Files.createDirectories(uploadPath);
+				}
+
+				String fileName = StringUtils.cleanPath(profileImage.getOriginalFilename());
+				Path filePath = uploadPath.resolve(fileName);
+				
+				try (InputStream inputStream = profileImage.getInputStream()) {
+					Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+					user.setProfileImage("/uploads/profile/" + fileName);
+				}
+			}
+			
+			userService.updateUser(user);
+			session.setAttribute("successMsg", "User updated successfully!");
+			
+		} catch (Exception e) {
+			session.setAttribute("errorMsg", "Error updating user: " + e.getMessage());
+		}
+		return "redirect:/admin/get-all-users";
+	}
+
+	@GetMapping("/delete-user/{id}")
+	public String deleteUser(@PathVariable Long id, HttpSession session) {
+		try {
+			// Kiểm tra không cho xóa chính mình
+			String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+			User userToDelete = userService.getUserById(id);
+			
+			if(userToDelete.getEmail().equals(currentUserEmail)) {
+				throw new RuntimeException("Cannot delete your own account");
+			}
+			
+			// UserService sẽ kiểm tra và không cho xóa ADMIN
+			userService.deleteUser(id);
+			session.setAttribute("successMsg", "User deleted successfully!");
+		} catch (Exception e) {
+			session.setAttribute("errorMsg", "Error deleting user: " + e.getMessage());
 		}
 		return "redirect:/admin/get-all-users";
 	}

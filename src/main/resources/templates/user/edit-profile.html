@@ -60,52 +60,221 @@
 <!-- End Navbar -->
 
 <!-- Start Edit Profile Form -->
-<section>
-    <div class="container mt-5 p-5">
+<section class="edit-profile-section">
+    <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow p-3 mb-5 bg-body rounded">
+            <div class="col-lg-8">
+                <!-- Back Button -->
+                <div class="mb-4">
+                    <a href="/user/profile" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Profile
+                    </a>
+                </div>
+
+                <div class="profile-card">
                     <div class="card-header">
-                        <h2 class="text-center">Edit Profile</h2>
+                        <h4><i class="fas fa-user-edit me-2"></i>Edit Profile</h4>
+                        <p class="text-muted mb-0">Update your personal information</p>
                     </div>
+                    
                     <div class="card-body">
-                        <form action="/user/update-profile" method="post">
+                        <form action="/user/update-profile" method="post" class="needs-validation" novalidate>
                             <input type="hidden" name="id" th:value="${user.id}" />
-                            <div class="mb-3">
-                                <label class="form-label">Name</label>
-                                <input class="form-control" name="name" type="text" th:value="${user.name}" required />
+                            
+                            <!-- Personal Information -->
+                            <div class="form-section">
+                                <h5 class="section-title">Personal Information</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Full Name</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                            <input class="form-control" name="name" type="text" 
+                                                   th:value="${user.name}" required />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Email Address</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                            <input class="form-control" name="email" type="email" 
+                                                   th:value="${user.email}" required />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mobile Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                        <input class="form-control" name="mobile" type="text" 
+                                               th:value="${user.mobile}" required />
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input class="form-control" name="email" type="email" th:value="${user.email}" required />
+
+                            <!-- Address Information -->
+                            <div class="form-section">
+                                <h5 class="section-title">Address Information</h5>
+                                <div class="mb-3">
+                                    <label class="form-label">Street Address</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                        <input class="form-control" name="address" type="text" 
+                                               th:value="${user.address}" required />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">City</label>
+                                        <input class="form-control" name="city" type="text" 
+                                               th:value="${user.city}" required />
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">State</label>
+                                        <input class="form-control" name="state" type="text" 
+                                               th:value="${user.state}" required />
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Pin Code</label>
+                                        <input class="form-control" name="pinCode" type="text" 
+                                               th:value="${user.pinCode}" required />
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Mobile</label>
-                                <input class="form-control" name="mobile" type="text" th:value="${user.mobile}" required />
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                                <a href="/user/profile" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Address</label>
-                                <input class="form-control" name="address" type="text" th:value="${user.address}" required />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">City</label>
-                                <input class="form-control" name="city" type="text" th:value="${user.city}" required />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">State</label>
-                                <input class="form-control" name="state" type="text" th:value="${user.state}" required />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Pin Code</label>
-                                <input class="form-control" name="pinCode" type="text" th:value="${user.pinCode}" required />
-                            </div>
-                            <button type="submit" class="btn btn-danger w-100">Update Profile</button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <style>
+        .edit-profile-section {
+            background: #f8f9fa;
+            padding: 3rem 0;
+            min-height: 100vh;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #2193b0, #6dd5ed);
+            color: white;
+            padding: 1.5rem;
+            border: none;
+        }
+
+        .form-section {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            color: #2b4c8c;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .input-group-text {
+            background: #f8f9fa;
+            border: 1px solid #ced4da;
+            color: #6c757d;
+        }
+
+        .form-control {
+            border: 1px solid #ced4da;
+            padding: 0.6rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #2193b0;
+            box-shadow: 0 0 0 0.2rem rgba(33,147,176,0.25);
+        }
+
+        .form-actions {
+            padding: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2193b0, #6dd5ed);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33,147,176,0.3);
+        }
+
+        .btn-outline-secondary {
+            border: 2px solid #6c757d;
+            padding: 0.8rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .edit-profile-section {
+                padding: 1rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <script>
+        // Form validation
+        (function() {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
 </section>
 <!-- End Edit Profile Form -->
 

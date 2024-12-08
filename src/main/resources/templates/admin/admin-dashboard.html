@@ -6,75 +6,186 @@
 <title>Admin | E-Store</title>
 </head>
 <body>
-	<section>
+	<section class="admin-dashboard">
+		<div class="container py-5">
+			<div class="dashboard-header mb-5">
+				<h2 class="text-center mb-3">Admin Dashboard</h2>
+				<p class="text-center text-muted">Welcome to your control panel</p>
+			</div>
 
-		<!-- Start Latest Product Module -->
-		<div class="container p-5">
-		<h3 class="m-4 text-center">Admin Dashboard</h3>
-			<div class="row p-5">
-				
-				<div class="col-md-4 mt-3">
-					<a href="/admin/category" class="text-decoration-none">
-						<div class="card custom-card-shadow">
-							<div class="card-body text-center text-primary">
-								<i class="fa-solid fa-layer-group fa-3x"></i>
-								<h4 class="mt-1">Manage Category</h4> 
+			<div class="row g-4">
+				<!-- Category Management -->
+				<div class="col-md-4">
+					<a href="/admin/category" class="dashboard-card">
+						<div class="card-body">
+							<div class="icon-wrapper purple">
+								<i class="fa-solid fa-layer-group"></i>
 							</div>
+							<h4>Category Management</h4>
+							<p>Manage course categories and subcategories</p>
 						</div>
 					</a>
 				</div>
 
-				<div class="col-md-4 mt-3">
-					<a href="/admin/product-list" class="text-decoration-none">
-						<div class="card custom-card-shadow">
-							<div class="card-body text-center text-primary">
-								<!-- <i class="fa-solid fa-square-plus fa-3x"></i> -->
-								<i class="fa-solid fa-cube fa-3x"></i>
-								<h4 class="mt-1">Manage Product</h4>
+				<!-- Product Management -->
+				<div class="col-md-4">
+					<a href="/admin/product-list" class="dashboard-card">
+						<div class="card-body">
+							<div class="icon-wrapper blue">
+								<i class="fa-solid fa-cube"></i>
 							</div>
+							<h4>Course Management</h4>
+							<p>Add, edit and manage course listings</p>
 						</div>
 					</a>
 				</div>
-				
-				<div class="col-md-4 mt-3">
-					<a href="/admin/orders" class="text-decoration-none">
-						<div class="card custom-card-shadow">
-							<div class="card-body text-center text-primary">
-								<!-- <i class="fa-solid fa-square-plus fa-3x"></i> -->
-								<i class="fa-solid fa-cubes fa-3x"></i>
-								<h4 class="mt-1">Manage Orders</h4> 
+
+				<!-- Order Management -->
+				<div class="col-md-4">
+					<a href="/admin/orders" class="dashboard-card">
+						<div class="card-body">
+							<div class="icon-wrapper green">
+								<i class="fa-solid fa-cubes"></i>
 							</div>
+							<h4>Order Management</h4>
+							<p>Track and manage student enrollments</p>
 						</div>
 					</a>
 				</div>
-				
-				<div class="col-md-4 mt-3">
-					<a href="/admin/get-all-users" class="text-decoration-none">
-						<div class="card custom-card-shadow">
-							<div class="card-body text-center text-primary">
-								<!-- <i class="fa-solid fa-circle-user fa-3x"></i> -->
-								<i class="fa-solid fa-user fa-3x"></i>
-								<h4 class="mt-1">Manage User</h4> 
+
+				<!-- User Management -->
+				<div class="col-md-4">
+					<a href="/admin/get-all-users" class="dashboard-card">
+						<div class="card-body">
+							<div class="icon-wrapper orange">
+								<i class="fa-solid fa-user"></i>
 							</div>
+							<h4>User Management</h4>
+							<p>Manage students, instructors and staff</p>
 						</div>
 					</a>
 				</div>
-				
-				<div class="col-md-4 mt-3">
-					<a href="/admin/revenue" class="text-decoration-none">
-						<div class="card custom-card-shadow">
-							<div class="card-body text-center text-primary">
-								<i class="fa-solid fa-coins fa-3x"></i>
-								<h4 class="mt-1">Manage Revenue</h4>
+
+				<!-- Revenue Management -->
+				<div class="col-md-4">
+					<a href="/admin/revenue" class="dashboard-card">
+						<div class="card-body">
+							<div class="icon-wrapper gold">
+								<i class="fa-solid fa-coins"></i>
 							</div>
+							<h4>Revenue Analytics</h4>
+							<p>Track earnings and financial metrics</p>
 						</div>
 					</a>
 				</div>
 			</div>
 		</div>
-		<!-- End of the Latest Product Module -->
-		
-		
+
+		<style>
+		.admin-dashboard {
+			background: #f8f9fa;
+			min-height: 100vh;
+			padding: 2rem 0;
+		}
+
+		.dashboard-header h2 {
+			color: #2b4c8c;
+			font-weight: 600;
+		}
+
+		.dashboard-card {
+			display: block;
+			text-decoration: none;
+			color: inherit;
+			transition: all 0.3s ease;
+		}
+
+		.dashboard-card .card-body {
+			background: white;
+			border-radius: 15px;
+			padding: 2rem;
+			text-align: center;
+			box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+			transition: all 0.3s ease;
+		}
+
+		.dashboard-card:hover .card-body {
+			transform: translateY(-5px);
+			box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+		}
+
+		.icon-wrapper {
+			width: 70px;
+			height: 70px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin: 0 auto 1.5rem;
+			transition: all 0.3s ease;
+		}
+
+		.icon-wrapper i {
+			font-size: 1.8rem;
+			color: white;
+		}
+
+		/* Icon wrapper colors */
+		.purple {
+			background: linear-gradient(135deg, #9c27b0, #673ab7);
+		}
+
+		.blue {
+			background: linear-gradient(135deg, #2193b0, #6dd5ed);
+		}
+
+		.green {
+			background: linear-gradient(135deg, #11998e, #38ef7d);
+		}
+
+		.orange {
+			background: linear-gradient(135deg, #f46b45, #eea849);
+		}
+
+		.gold {
+			background: linear-gradient(135deg, #FFD700, #FFA500);
+		}
+
+		.dashboard-card:hover .icon-wrapper {
+			transform: scale(1.1) rotate(5deg);
+		}
+
+		.dashboard-card h4 {
+			color: #2b4c8c;
+			margin-bottom: 0.75rem;
+			font-weight: 600;
+		}
+
+		.dashboard-card p {
+			color: #6c757d;
+			margin-bottom: 0;
+			font-size: 0.9rem;
+		}
+
+		@media (max-width: 768px) {
+			.admin-dashboard {
+				padding: 1rem 0;
+			}
+
+			.dashboard-card .card-body {
+				padding: 1.5rem;
+			}
+
+			.icon-wrapper {
+				width: 60px;
+				height: 60px;
+			}
+
+			.icon-wrapper i {
+				font-size: 1.5rem;
+			}
+		}
+		</style>
 	</section>
 </body>
 </html>

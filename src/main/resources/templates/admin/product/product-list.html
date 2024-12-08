@@ -3,75 +3,208 @@
 	th:replace="~{base::layout(~{::section})}">
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<title>Product List</title>
 </head>
 <body>
-	<section>
-		<div class="container-fluid p-5">
-			
-			
-			<div class="row">
-				<div class="col-md-4">
-					<a th:href="@{'/admin/add-product'}" class="btn btn-danger mb-3">Add Product</a>
+	<section class="product-management">
+		<div class="container-fluid">
+			<!-- Header Section -->
+			<div class="page-header mb-4">
+				<div class="row align-items-center">
+					<div class="col">
+						<h3 class="page-title">Product Management</h3>
+						<p class="text-muted">Manage and organize your products</p>
+					</div>
+					<div class="col-auto">
+						<a href="/admin/add-product" class="btn btn-primary">
+							<i class="fas fa-plus-circle me-2"></i>Add New Product
+						</a>
+					</div>
 				</div>
 			</div>
-			
-			<div class="row">
-				<div class="col-md-12">
-					<div class="card custom-card-shadow">
-						<div class="card-header text-center fs-4">List of Products</div>
 
-						<th:block th:if="${session.successMsg}">
-							<p class="text-success fw-bold text-center mt-2">[[${session.successMsg}]]</p>
-							<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-						</th:block>
-						<th:block th:if="${session.errorMsg}">
-							<p class="text-danger fw-bold text-center mt-2">[[${session.errorMsg}]]</p>
-							<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
-						</th:block>
+			<!-- Alert Messages -->
+			<div th:if="${session.successMsg}" class="alert alert-success alert-dismissible fade show">
+				<i class="fas fa-check-circle me-2"></i>
+				<span>[[${session.successMsg}]]</span>
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+				<th:block th:text="${@commonServiceImpl.removeSessionMessage()}"></th:block>
+			</div>
 
-						<div class="card-body">
-							<table class="table">
-								<thead>
-									<tr>
-										<th scope="col">SL No.</th>
-										<th scope="col">Image</th>
-										<th scope="col">Title</th>
-										<th scope="col">Category</th>
-										<th scope="col">Price</th>
-										<th scope="col">Discount</th>
-										<th scope="col">Discount Price</th>
-										<th scope="col">Status</th>
-										<th scope="col">Stock</th>
-										<th scope="col">Actions</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr th:each="product, count : ${productList}">
-										<th scope="row">[[${count.count}]]</th>
-										<td><img th:src="@{${product.productImage}}" width="50px;" height="50px;"></td>
-										<td>[[${product.productTitle}]]</td>
-										<td th:text="${product.category != null ? product.category.categoryName : ''}">Category</td>
-										<td>[[${product.productPrice}]]</td>
-										<td>[[${product.discount}]]</td>
-										<td>[[${product.discountPrice}]]</td>
-										<td>[[${product.isActive}]]</td>
-										<td>[[${product.productStock}]]</td>
-										<td>
-										<!-- th:href="@{'/admin/edit-category/'+${category.id}}" -->  
-										&nbsp; <a th:href="@{'/admin/edit-product/'+${product.id}}"  class="btn btn-info btn-sm"><i class="fa-solid fa-pen-to-square text-decoration-none"></i></a>&nbsp; &nbsp; 
-										<a th:href="@{'/admin/delete-product/'+${product.id}}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure want to delete this?');"><i class="fa-solid fa-trash text-decoration-none"></i></a>
-										<!-- th:href="@{'/admin/delete-category/'+${category.id}}" -->
-										</td>
-									</tr>
-									
-								</tbody>
-							</table>
-						</div>
+			<!-- Product List Table -->
+			<div class="product-card">
+				<div class="card-header">
+					<h4><i class="fas fa-box me-2"></i>Products List</h4>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table" id="productTable">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>Image</th>
+									<th>Product</th>
+									<th>Category</th>
+									<th>Price</th>
+									<th>Stock</th>
+									<th>Status</th>
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="product : ${productList}">
+									<td>#[[${product.id}]]</td>
+									<td>
+										<div class="product-image-container">
+											<img th:src="@{${product.productImage}}" 
+												 class="product-image"
+												 th:alt="${product.productTitle}">
+										</div>
+									</td>
+									<td>
+										<div class="product-info">
+											<h6 class="mb-0">[[${product.productTitle}]]</h6>
+											<small class="text-muted">[[${#strings.abbreviate(product.productDescription, 50)}]]</small>
+										</div>
+									</td>
+									<td>[[${product.category?.categoryName}]]</td>
+									<td>
+										<div class="price-info">
+											<span class="text-danger fw-bold">$[[${product.discountPrice}]]</span>
+											<small class="text-muted text-decoration-line-through">$[[${product.productPrice}]]</small>
+										</div>
+									</td>
+									<td>
+										<span class="badge" th:classappend="${product.productStock > 0 ? 'bg-success' : 'bg-danger'}">
+											[[${product.productStock}]]
+										</span>
+									</td>
+									<td>
+										<span class="status-badge" 
+											  th:classappend="${product.isActive ? 'status-active' : 'status-inactive'}">
+											[[${product.isActive ? 'Active' : 'Inactive'}]]
+										</span>
+									</td>
+									<td>
+										<div class="action-buttons">
+											<a th:href="@{'/admin/edit-product/'+${product.id}}" 
+											   class="btn btn-info btn-sm">
+												<i class="fas fa-edit"></i>
+											</a>
+											<a th:href="@{'/admin/delete-product/'+${product.id}}" 
+											   class="btn btn-danger btn-sm delete-product">
+												<i class="fas fa-trash"></i>
+											</a>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</div>
 			</div>
 		</div>
 	</section>
+
+	<style>
+		.product-image-container {
+			width: 80px;
+			height: 80px;
+			border-radius: 8px;
+			border: 2px solid #e9ecef;
+			background: #fff;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			position: relative;
+			overflow: hidden;
+		}
+
+		.product-image {
+			width: 80px !important;
+			height: 80px !important;
+			object-fit: cover;
+			transition: transform 0.3s ease;
+		}
+
+		@media (max-width: 768px) {
+			.product-image-container {
+				width: 60px;
+				height: 60px;
+			}
+
+			.product-image {
+				width: 60px !important;
+				height: 60px !important;
+			}
+		}
+
+		.product-image.loading {
+			animation: shimmer 1s infinite linear;
+			background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+			background-size: 800px 104px;
+		}
+
+		.product-image-container.error::before {
+			content: '🖼️';
+			font-size: 24px;
+			color: #ccc;
+		}
+
+		@keyframes shimmer {
+			0% {
+				background-position: -468px 0;
+			}
+			100% {
+				background-position: 468px 0;
+			}
+		}
+	</style>
+
+	<script>
+	$(document).ready(function() {
+		$('#productTable').DataTable({
+			"order": [[0, "desc"]],
+			"pageLength": 10,
+			"language": {
+				"search": "Search products:",
+				"lengthMenu": "Show _MENU_ products per page",
+				"info": "Showing _START_ to _END_ of _TOTAL_ products"
+			}
+		});
+
+		$('.delete-product').on('click', function(e) {
+			e.preventDefault();
+			const href = $(this).attr('href');
+			
+			Swal.fire({
+				title: 'Are you sure?',
+				text: "This action cannot be undone!",
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#2193b0',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Yes, delete it!'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					window.location.href = href;
+				}
+			});
+		});
+	});
+
+	document.querySelectorAll('.product-image').forEach(img => {
+		img.classList.add('loading');
+		
+		img.onload = function() {
+			this.classList.remove('loading');
+		}
+		
+		img.onerror = function() {
+			this.parentElement.classList.add('error');
+			this.style.display = 'none';
+		}
+	});
+	</script>
 </body>
 </html>

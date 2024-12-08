@@ -27,17 +27,125 @@
 			height: 30px;
 			object-fit: cover;
 		}
+		:root {
+			/* Primary colors */
+			--primary-color: #FF6347;
+			--primary-dark: #FF4500;
+			--primary-light: #FFE4E1;
+			
+			/* Neutral colors */
+			--text-primary: #333333;
+			--text-secondary: #666666;
+			--background: #F8F9FA;
+			
+			/* Border radius */
+			--border-radius-sm: 4px;
+			--border-radius-md: 8px;
+			--border-radius-lg: 16px;
+			
+			/* Shadows */
+			--shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+			--shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+			--shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+		}
+		.product-card {
+			background: white;
+			border-radius: var(--border-radius-lg);
+			box-shadow: var(--shadow-sm);
+			transition: all 0.3s ease;
+			overflow: hidden;
+		}
+
+		.product-card:hover {
+			transform: translateY(-5px);
+			box-shadow: var(--shadow-lg);
+		}
+
+		.product-img-container {
+			aspect-ratio: 16/9;
+			overflow: hidden;
+		}
+
+		.product-img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			transition: transform 0.3s ease;
+		}
+
+		.product-card:hover .product-img {
+			transform: scale(1.05);
+		}
+
+		.btn {
+			padding: 0.75rem 1.5rem;
+			border-radius: var(--border-radius-md);
+			font-weight: 500;
+			transition: all 0.2s ease;
+		}
+
+		.btn-primary {
+			background: var(--primary-color);
+			border: none;
+		}
+
+		.btn-primary:hover {
+			background: var(--primary-dark);
+			transform: translateY(-1px);
+		}
+
+		.form-control {
+			border-radius: var(--border-radius-md);
+			padding: 0.75rem 1rem;
+			border: 1px solid #ddd;
+			transition: all 0.2s ease;
+		}
+
+		.form-control:focus {
+			border-color: var(--primary-color);
+			box-shadow: 0 0 0 3px var(--primary-light);
+		}
+
+		.rating {
+			display: inline-flex;
+			gap: 4px;
+		}
+
+		.star {
+			color: #ddd;
+			font-size: 1.25rem;
+			cursor: pointer;
+			transition: all 0.2s ease;
+		}
+
+		.star:hover {
+			transform: scale(1.2);
+			color: #ffd700;
+		}
+
+		.star.active {
+			color: #ffd700;
+			animation: pulse 0.3s ease;
+		}
+
+		@keyframes pulse {
+			0% { transform: scale(1); }
+			50% { transform: scale(1.2); }
+			100% { transform: scale(1); }
+		}
 	</style>
 </head>
 <body>
 <!-- Start navbar -->
-<nav class="navbar navbar-expand-lg bg-danger navbar-dark">
-	<div class="container-fluid">
-		<a class="navbar-brand" href="/"><i class="fa-solid fa-cart-shopping"></i> <i><b>Online Courses</b></i></a>
-		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+<nav class="navbar navbar-expand-lg sticky-top">
+	<div class="container">
+		<a class="navbar-brand" href="/">
+			<i class="fas fa-graduation-cap"></i> E-Learning
+		</a>
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
 			<span class="navbar-toggler-icon"></span>
 		</button>
-		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		<div class="collapse navbar-collapse" id="navbarNav">
 			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 				<li class="nav-item"><a class="nav-link active" aria-current="page" href="/"><i class="fa-solid fa-house"></i> Home</a></li>
 				<li class="nav-item"><a class="nav-link active" aria-current="page" href="/products">Product</a></li>
@@ -47,52 +155,83 @@
 					</ul>
 				</li>
 			</ul>
-			<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+			<ul class="navbar-nav ms-auto">
+				<!-- Guest Menu -->
 				<th:block th:if="${currentLoggedInUserDetails == null}">
-					<li class="nav-item"><a class="nav-link active" aria-current="page" href="/signin"><i class="fa-solid fa-right-to-bracket"></i> LOGIN</a></li>
-					<li class="nav-item"><a class="nav-link active" aria-current="page" href="/register">REGISTER</a></li>
-					<li class="nav-item"><a class="nav-link active" aria-current="page" href="/admin/">ADMIN</a></li>
-				</th:block>
-				<th:block th:if="${currentLoggedInUserDetails != null}">
-					<li class="nav-item"><a class="nav-link active" aria-current="page" href="/user/cart"><i class="fas fa-cart-shopping"></i> Cart [ [[${countCartForUser}]] ]</a></li>
-					<th:block th:if="${currentLoggedInUserDetails != null && currentLoggedInUserDetails.role == 'ROLE_USER'}">
-						<li class="nav-item">
-							<a class="nav-link active" th:href="@{/user/chat}">
-								<i class="fas fa-comments"></i> Chat Support
-								<span class="badge bg-danger" id="unreadCount">0</span>
-							</a>
-						</li>
-					</th:block>
-					<th:block th:if="${currentLoggedInUserDetails != null && currentLoggedInUserDetails.role == 'ROLE_CONSULTANT'}">
-						<li class="nav-item">
-							<a class="nav-link active" th:href="@{/consultant/dashboard}">
-								<i class="fas fa-headset"></i> Support Dashboard
-								<span class="badge bg-danger" id="consultantUnreadCount">0</span>
-							</a>
-						</li>
-					</th:block>
-					<li class="nav-item dropdown">
-						<a class="nav-link active dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-							<img th:src="@{${currentLoggedInUserDetails.profileImage}}" alt="User Avatar">
-							[[${currentLoggedInUserDetails.name}]]
+					<li class="nav-item">
+						<a class="nav-link" href="/signin">
+							<i class="fas fa-sign-in-alt"></i> Login
 						</a>
-						<ul class="dropdown-menu">
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/register">
+							<i class="fas fa-user-plus"></i> Register
+						</a>
+					</li>
+				</th:block>
+
+				<!-- Logged In User Menu -->
+				<th:block th:if="${currentLoggedInUserDetails != null}">
+					<!-- Cart for both USER and CONSULTANT -->
+					<th:block th:if="${currentLoggedInUserDetails.role == 'ROLE_USER'}">
+						<li class="nav-item">
+							<a class="nav-link" href="/user/cart">
+								<i class="fas fa-shopping-cart"></i> Cart 
+								<span class="badge bg-primary">[[${countCartForUser}]]</span>
+							</a>
+						</li>
+						<li class="nav-item"></li>
+							<a class="nav-link" th:href="@{/user/chat}">
+								<i class="fas fa-comments"></i> Chat Support
+								<span class="badge bg-primary" id="unreadCount">0</span>
+							</a>
+						</li>
+					</th:block>
+
+					<!-- Support Dashboard for CONSULTANT -->
+					<th:block th:if="${currentLoggedInUserDetails.role == 'ROLE_CONSULTANT'}">
+						<li class="nav-item">
+							<a class="nav-link" th:href="@{/consultant/dashboard}">
+								<i class="fas fa-headset"></i> Support Dashboard
+								<span class="badge bg-primary" id="consultantUnreadCount">0</span>
+							</a>
+						</li>
+					</th:block>
+
+					<!-- Admin Dashboard -->
+					<th:block th:if="${currentLoggedInUserDetails.role == 'ROLE_ADMIN'}">
+							<a class="nav-link dropdown-toggle" href="/admin/" role="button" >
+								<i class="fas fa-cog"></i> Admin Panel
+							</a>
+	
+					</th:block>
+
+					<!-- User Profile Dropdown -->
+					<li class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+							<div class="user-avatar">
+								<img th:src="@{${currentLoggedInUserDetails.profileImage}}" alt="User Avatar">
+								<span class="user-name">[[${currentLoggedInUserDetails.name}]]</span>
+							</div>
+						</a>
+						<ul class="dropdown-menu dropdown-menu-end">
+							<li><a class="dropdown-item" href="/user/profile">
+								<i class="fas fa-user"></i> Profile
+							</a></li>
 							<th:block th:if="${currentLoggedInUserDetails.role == 'ROLE_USER'}">
-								<li><a class="dropdown-item" href="/user/orders">
-									<i class="fas fa-shopping-bag"></i> My Orders
-								</a></li>
-								<li><a class="dropdown-item" href="/user/profile">
-									<i class="fas fa-user"></i> Profile
-								</a></li>
+<li><a class="dropdown-item" href="/user/orders">
+								<i class="fas fa-shopping-bag"></i> My Orders
+							</a></li>
 							</th:block>
-							<th:block th:if="${currentLoggedInUserDetails.role == 'ROLE_ADMIN'}">
-								<li><a class="dropdown-item" href="/admin/">
-									<i class="fas fa-tachometer-alt"></i> Dashboard
-								</a></li>
-							</th:block>
+						
+					
+							
+							<li><hr class="dropdown-divider"></li>
+							<li><a class="dropdown-item text-danger" href="/logout">
+								<i class="fas fa-sign-out-alt"></i> Logout
+							</a></li>
 						</ul>
 					</li>
-					<li class="nav-item"><a class="nav-link active" aria-current="page" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
 				</th:block>
 			</ul>
 		</div>
@@ -101,10 +240,429 @@
 <!-- End of navbar -->
 <div th:replace="${content}"></div>
 <!-- start footer -->
-<div class="container-fluid p-1 bg-danger text-center text-white" style="margin-top: 200px;">
-	<p class="mt-2"><i><b>Online Courses</b></i><br><br>Copyright &copy; 2024. All rights Reserved</p>
-</div>
-<!-- End footer -->
+<footer class="footer">
+	<div class="container">
+		<div class="row">
+			<!-- About Section -->
+			<div class="col-lg-4 mb-4">
+				<h5 class="footer-heading">About E-Learning</h5>
+				<p class="text-muted">
+					Empowering learners worldwide with quality education and innovative learning solutions.
+				</p>
+				<div class="social-links">
+					<a href="#"><i class="fab fa-facebook"></i></a>
+					<a href="#"><i class="fab fa-twitter"></i></a>
+					<a href="#"><i class="fab fa-linkedin"></i></a>
+					<a href="#"><i class="fab fa-instagram"></i></a>
+				</div>
+			</div>
+
+			<!-- Quick Links -->
+			<div class="col-lg-2 col-md-6 mb-4">
+				<h5 class="footer-heading">Quick Links</h5>
+				<ul class="footer-links">
+					<li><a href="/courses">Courses</a></li>
+					<li><a href="/about">About Us</a></li>
+					<li><a href="/contact">Contact</a></li>
+					<li><a href="/faq">FAQ</a></li>
+				</ul>
+			</div>
+
+			<!-- Categories -->
+			<div class="col-lg-2 col-md-6 mb-4">
+				<h5 class="footer-heading">Categories</h5>
+				<ul class="footer-links">
+					<li><a href="#">Programming</a></li>
+					<li><a href="#">Data Science</a></li>
+					<li><a href="#">Business</a></li>
+					<li><a href="#">Design</a></li>
+				</ul>
+			</div>
+
+			<!-- Contact Info -->
+			<div class="col-lg-4 mb-4">
+				<h5 class="footer-heading">Contact Us</h5>
+				<ul class="footer-contact">
+					<li>
+						<i class="fas fa-map-marker-alt"></i>
+						123 Education Street, Learning City
+					</li>
+					<li>
+						<i class="fas fa-phone"></i>
+						+1 234 567 890
+					</li>
+					<li>
+						<i class="fas fa-envelope"></i>
+						info@elearning.com
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- Bottom Footer -->
+		<div class="footer-bottom">
+			<div class="row align-items-center">
+				<div class="col-md-6">
+					<p class="mb-0">© 2024 E-Learning. All rights reserved.</p>
+				</div>
+				<div class="col-md-6 text-md-end">
+					<a href="/privacy">Privacy Policy</a>
+					<a href="/terms">Terms of Service</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</footer>
+
+<!-- CSS cho Footer -->
+<style>
+.footer {
+	background: #f8f9fa;
+	padding: 4rem 0 1rem;
+	margin-top: 4rem;
+	border-top: 1px solid #eee;
+}
+
+.footer-heading {
+	color: #1e3c72;
+	font-weight: 600;
+	margin-bottom: 1.5rem;
+	position: relative;
+}
+
+.footer-heading::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	bottom: -8px;
+	width: 40px;
+	height: 2px;
+	background: #ffd700;
+}
+
+.footer-links {
+	list-style: none;
+	padding: 0;
+}
+
+.footer-links li {
+	margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+	color: #666;
+	text-decoration: none;
+	transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+	color: #1e3c72;
+}
+
+.social-links {
+	margin-top: 1.5rem;
+}
+
+.social-links a {
+	display: inline-block;
+	width: 36px;
+	height: 36px;
+	background: #1e3c72;
+	color: white;
+	text-align: center;
+	line-height: 36px;
+	border-radius: 50%;
+	margin-right: 0.5rem;
+	transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+	background: #ffd700;
+	color: #1e3c72;
+	transform: translateY(-3px);
+}
+
+.footer-contact {
+	list-style: none;
+	padding: 0;
+}
+
+.footer-contact li {
+	color: #666;
+	margin-bottom: 1rem;
+	display: flex;
+	align-items: center;
+}
+
+.footer-contact li i {
+	color: #1e3c72;
+	margin-right: 0.75rem;
+	width: 20px;
+}
+
+.footer-bottom {
+	margin-top: 3rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid #eee;
+}
+
+.footer-bottom a {
+	color: #666;
+	text-decoration: none;
+	margin-left: 1.5rem;
+	transition: color 0.3s ease;
+}
+
+.footer-bottom a:hover {
+	color: #1e3c72;
+}
+
+@media (max-width: 768px) {
+	.footer {
+		padding: 3rem 0 1rem;
+	}
+	
+	.footer-bottom {
+		text-align: center;
+	}
+	
+	.footer-bottom .text-md-end {
+		text-align: center !important;
+		margin-top: 1rem;
+	}
+	
+	.footer-bottom a {
+		margin: 0 0.75rem;
+	}
+}
+
+.user-avatar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-avatar img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+.user-name {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdown-menu {
+    min-width: 200px;
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+}
+
+.dropdown-item {
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item i {
+    width: 16px;
+    text-align: center;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.dropdown-divider {
+    margin: 0.5rem 0;
+}
+
+.text-danger:hover {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+@media (max-width: 991px) {
+    .user-avatar {
+        justify-content: flex-start;
+    }
+    
+    .dropdown-menu {
+        position: static !important;
+        width: 100%;
+        margin-top: 0;
+        box-shadow: none;
+        border: 1px solid #eee;
+    }
+}
+
+/* Option 1: Modern Blue Gradient */
+.navbar {
+    background: linear-gradient(120deg, #2b4c8c 0%, #1a365d 100%);
+    padding: 1rem 0;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+}
+
+/* Option 2: Deep Purple Gradient 
+.navbar {
+    background: linear-gradient(120deg, #4a148c 0%, #311b92 100%);
+    padding: 1rem 0;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+}
+*/
+
+/* Option 3: Professional Dark 
+.navbar {
+    background: linear-gradient(120deg, #1a237e 0%, #121858 100%);
+    padding: 1rem 0;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+}
+*/
+
+/* Option 4: Ocean Blue 
+.navbar {
+    background: linear-gradient(120deg, #006064 0%, #004d40 100%);
+    padding: 1rem 0;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+}
+*/
+
+.navbar-brand {
+    color: white !important;
+    font-weight: 600;
+    font-size: 1.5rem;
+    letter-spacing: 0.5px;
+}
+
+.navbar-brand i {
+    color: #64b5f6;  /* Light blue accent */
+    margin-right: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover i {
+    transform: rotate(15deg);
+}
+
+.nav-link {
+    color: rgba(255,255,255,0.9) !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: #64b5f6;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.nav-link:hover::after {
+    width: 80%;
+}
+
+.nav-link:hover {
+    color: #64b5f6 !important;
+}
+
+.navbar .btn-primary {
+    background: #64b5f6;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.navbar .btn-primary:hover {
+    background: #42a5f5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(100,181,246,0.3);
+}
+
+/* Dropdown styling */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.dropdown-item {
+    padding: 0.7rem 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #2b4c8c;
+}
+
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background: #1a365d;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .nav-link::after {
+        display: none;
+    }
+}
+
+/* Thêm styles cho Admin Panel */
+.nav-item.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    padding: 0.5rem;
+}
+
+.dropdown-item {
+    padding: 0.7rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    color: white;
+}
+
+.dropdown-item i {
+    width: 20px;
+    text-align: center;
+}
+
+.dropdown-divider {
+    margin: 0.5rem 0;
+    border-color: #eee;
+}
+</style>
 <!-- Initialize Toast -->
 <script>
 	$(document).ready(function() {
