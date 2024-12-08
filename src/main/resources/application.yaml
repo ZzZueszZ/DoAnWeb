@@ -1,12 +1,15 @@
-server:
-  servlet:
-    context-path: /
-
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/ecoommerce_store
+    url: jdbc:mysql://localhost:3306/ecoommerce_store2
     username: root
     password: D0ga00g123@
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
 
   mail:
     host: smtp.gmail.com
