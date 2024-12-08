@@ -1,0 +1,16 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: ecommerce_store_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: D0ga00g123@  # Chỉ định mật khẩu cho root
+      MYSQL_DATABASE: ecoommerce_store  # Tạo database mặc định
+    ports:
+      - "3307:3306"  # Ánh xạ cổng
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/db-init.sql:/docker-entrypoint-initdb.d/db-init.sql:ro
+
+volumes:
+  mysql_data:
