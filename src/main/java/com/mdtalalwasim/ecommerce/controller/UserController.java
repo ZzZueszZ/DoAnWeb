@@ -5,26 +5,22 @@ import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.mdtalalwasim.ecommerce.entity.*;
+import com.mdtalalwasim.ecommerce.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
-import com.mdtalalwasim.ecommerce.entity.Cart;
-import com.mdtalalwasim.ecommerce.entity.Category;
-import com.mdtalalwasim.ecommerce.entity.User;
-import com.mdtalalwasim.ecommerce.service.CartService;
-import com.mdtalalwasim.ecommerce.service.CategoryService;
-import com.mdtalalwasim.ecommerce.service.UserService;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 import jakarta.servlet.http.HttpSession;
-import com.mdtalalwasim.ecommerce.service.OrderService;
-import com.mdtalalwasim.ecommerce.entity.Order;
 
 @Controller
 @RequestMapping("/user")
@@ -41,6 +37,9 @@ public class UserController {
 	
 	@Autowired
 	private OrderService orderService;
+
+	@Autowired
+	private ReviewService reviewService;
 	
 	//to track which user is login right Now
 	//by default call this method when any request come to this controller because of @ModelAttribut
@@ -255,6 +254,36 @@ public class UserController {
 		model.addAttribute("orders", orders);
 		model.addAttribute("currentUser", user);
 		return "user/orders";
+	}
+	@PostMapping("/user/review/submit")
+	public String submitReview(
+			@RequestParam Long productId,
+			@RequestParam Integer rating,
+			@RequestParam(required = false) String comment,
+			@AuthenticationPrincipal UserDetails userDetails,
+			RedirectAttributes redirectAttributes,
+			HttpSession session) {
+
+		try {
+			User user = userService.getUserByEmail(userDetails.getUsername());
+			if (user == null) {
+				throw new RuntimeException("User not found");
+			}
+
+			Review review = reviewService.addReview(
+					user.getId(),
+					productId,
+					rating,
+					comment
+			);
+
+			session.setAttribute("successMsg", "Review submitted successfully!");
+
+		} catch (Exception e) {
+			session.setAttribute("errorMsg", e.getMessage());
+		}
+
+		return "redirect:/user/orders";
 	}
 }
 

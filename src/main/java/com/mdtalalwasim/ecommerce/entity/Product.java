@@ -1,10 +1,12 @@
 package com.mdtalalwasim.ecommerce.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Formula;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -64,6 +66,15 @@ public class Product {
 	@UpdateTimestamp
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
+	
+	@OneToMany(mappedBy = "product")
+	private List<Review> reviews;
+	
+	@Formula("(SELECT AVG(r.rating) FROM review r WHERE r.product_id = id)")
+	private Double averageRating;
+	
+	@Formula("(SELECT COUNT(*) FROM review r WHERE r.product_id = id)")
+	private Long reviewCount;
 	
 	
 }

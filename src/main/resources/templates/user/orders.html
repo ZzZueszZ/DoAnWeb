@@ -3,6 +3,7 @@
       th:replace="~{base::layout(~{::section})}">
 <head>
     <title>My Orders</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 <section>
@@ -145,6 +146,7 @@
                                         <th>Price</th>
                                         <th>Quantity</th>
                                         <th>Total</th>
+                                        <th th:if="${order.status.name() == 'CONFIRMED'}">Rating</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -159,6 +161,74 @@
                                         <td>৳[[${item.price}]]</td>
                                         <td>[[${item.quantity}]]</td>
                                         <td>৳[[${item.price * item.quantity}]]</td>
+                                        <td th:if="${order.status.name() == 'CONFIRMED'}">
+                                            <div class="rating-container">
+                                                <form th:action="@{/user/review/submit}" method="post" class="review-form">
+                                                    <input type="hidden" name="productId" th:value="${item.product.id}">
+                                                    
+                                                    <!-- Rating stars using radio buttons -->
+                                                    <div class="rating">
+                                                        <div class="rating-row">
+                                                            <input type="radio" id="star5_${item.product.id}" name="rating" value="5" class="rating-input">
+                                                            <label for="star5_${item.product.id}" class="star">
+                                                                <i class="far fa-star"></i>
+                                                                <i class="far fa-star"></i>
+                                                                <i class="far fa-star"></i>
+                                                                <i class="far fa-star"></i>
+                                                                <i class="far fa-star"></i>
+                                                                <span class="rating-text">Excellent</span>
+                                                            </label>
+                                                        </div>
+                                                        
+                                                        <div class="rating-row">
+                                                            <input type="radio" id="star4_${item.product.id}" name="rating" value="4" class="rating-input">
+                                                            <label for="star4_${item.product.id}" class="star">
+                                                                <i class="far fa-star"></i>
+                                                                <i class="far fa-star"></i>
+                                                                <i class="far fa-star"></i>
+                                                                <i class="far fa-star"></i>
+                                                                <span class="rating-text">Very Good</span>
+                                                            </label>
+                                                        </div>
+                                                        
+                                                        <div class="rating-row">
+                                                            <input type="radio" id="star3_${item.product.id}" name="rating" value="3" class="rating-input">
+                                                            <label for="star3_${item.product.id}" class="star">
+                                                                <i class="far fa-star"></i>
+                                                                <i class="far fa-star"></i>
+                                                                <i class="far fa-star"></i>
+                                                                <span class="rating-text">Good</span>
+                                                            </label>
+                                                        </div>
+                                                        
+                                                        <div class="rating-row">
+                                                            <input type="radio" id="star2_${item.product.id}" name="rating" value="2" class="rating-input">
+                                                            <label for="star2_${item.product.id}" class="star">
+                                                                <i class="far fa-star"></i>
+                                                                <i class="far fa-star"></i>
+                                                                <span class="rating-text">Fair</span>
+                                                            </label>
+                                                        </div>
+                                                        
+                                                        <div class="rating-row">
+                                                            <input type="radio" id="star1_${item.product.id}" name="rating" value="1" class="rating-input">
+                                                            <label for="star1_${item.product.id}" class="star">
+                                                                <i class="far fa-star"></i>
+                                                                <span class="rating-text">Poor</span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <textarea name="comment" class="form-control mt-2" 
+                                                              rows="2" 
+                                                              placeholder="Write your review (optional)"></textarea>
+                                                    
+                                                    <button type="submit" class="btn btn-sm btn-primary mt-2 w-100">
+                                                        Submit Review
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td colspan="3" class="text-end"><strong>Total Amount:</strong></td>
@@ -174,6 +244,9 @@
     </div>
 </section>
 
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
 <style>
 .gap-2 {
     gap: 0.5rem;
@@ -184,6 +257,103 @@
 .custom-card-shadow {
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
+.rating-container {
+    padding: 10px;
+}
+.rating {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+.rating-row {
+    display: flex;
+    align-items: center;
+}
+.rating-input {
+    display: none;
+}
+.star {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px;
+    color: #ddd;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+.star i {
+    font-size: 16px;
+}
+.rating-text {
+    margin-left: 10px;
+    font-size: 14px;
+}
+/* Hover effect */
+.star:hover {
+    color: #ffd700;
+    transform: scale(1.02);
+}
+/* Selected state */
+.rating-input:checked + .star {
+    color: #ffd700;
+}
+.rating-input:checked + .star i {
+    font-weight: 900;
+}
+/* Make submit button full width */
+.btn-primary {
+    width: 100%;
+    margin-top: 10px;
+}
+/* Responsive */
+@media (max-width: 768px) {
+    .star i {
+        font-size: 18px;
+    }
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.review-form').forEach(form => {
+        // Form validation
+        form.addEventListener('submit', function(e) {
+            const rating = form.querySelector('input[name="rating"]:checked');
+            if (!rating) {
+                e.preventDefault();
+                alert('Please select a rating');
+            }
+        });
+
+        // Update stars when radio is clicked
+        form.querySelectorAll('.rating-input').forEach(input => {
+            const label = input.nextElementSibling;
+            const stars = label.querySelectorAll('i');
+            
+            // Add text description
+            const ratingValue = input.value;
+            let ratingText = '';
+            switch(ratingValue) {
+                case '5': ratingText = 'Excellent'; break;
+                case '4': ratingText = 'Very Good'; break;
+                case '3': ratingText = 'Good'; break;
+                case '2': ratingText = 'Fair'; break;
+                case '1': ratingText = 'Poor'; break;
+            }
+            label.setAttribute('data-rating', ratingText);
+
+            // Update stars on change
+            input.addEventListener('change', function() {
+                stars.forEach(star => {
+                    star.classList.remove('far');
+                    star.classList.add('fas');
+                });
+            });
+        });
+    });
+});
+</script>
 </body>
 </html>
