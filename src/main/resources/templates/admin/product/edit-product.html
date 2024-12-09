@@ -69,6 +69,56 @@
                                 <div class="invalid-feedback">Please enter a description</div>
                             </div>
 
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Discount</label>
+                                    <div class="input-group">
+                                        <input type="number" name="discount" class="form-control" 
+                                               th:value="${product.discount != null ? product.discount : 0}"
+                                               min="0" max="100" step="0.1">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Discount Status</label>
+                                    <div class="status-toggle">
+                                        <div class="form-check">
+                                            <input type="radio" name="isDiscountActive" class="form-check-input" 
+                                                   id="discountActive" value="true" 
+                                                   th:checked="${product.isDiscountActive != null && product.isDiscountActive}">
+                                            <label class="form-check-label" for="discountActive">
+                                                <i class="fas fa-tag text-success me-1"></i>Active
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input type="radio" name="isDiscountActive" class="form-check-input" 
+                                                   id="discountInactive" value="false" 
+                                                   th:checked="${product.isDiscountActive == null || !product.isDiscountActive}">
+                                            <label class="form-check-label" for="discountInactive">
+                                                <i class="fas fa-times text-danger me-1"></i>Inactive
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3 discount-dates">
+                                <div class="col-md-6">
+                                    <label class="form-label">Discount Start Date</label>
+                                    <input type="datetime-local" name="discountStartDate" 
+                                           class="form-control"
+                                           th:value="${product.discountStartDate != null ? #temporals.format(product.discountStartDate, 'yyyy-MM-dd''T''HH:mm') : ''}">
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Discount End Date</label>
+                                    <input type="datetime-local" name="discountEndDate" 
+                                           class="form-control"
+                                           th:value="${product.discountEndDate != null ? #temporals.format(product.discountEndDate, 'yyyy-MM-dd''T''HH:mm') : ''}">
+                                </div>
+                            </div>
+
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Price</label>
@@ -216,6 +266,33 @@
                 padding: 1rem;
             }
         }
+        
+        .input-group-text {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-left: none;
+        }
+        
+        .discount-dates {
+            transition: all 0.3s ease;
+        }
+        
+        input[type="datetime-local"] {
+            padding: 0.8rem 1rem;
+        }
+        
+        .status-toggle .form-check {
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-toggle .form-check-input:checked {
+            background-color: #2193b0;
+            border-color: #2193b0;
+        }
+        
+        .status-toggle .form-check-label {
+            font-weight: 500;
+        }
     </style>
 
     <script>
@@ -248,6 +325,57 @@
             reader.readAsDataURL(file);
         }
     });
+
+    // Discount form handling
+    function handleDiscountForm() {
+        const discountActive = document.getElementById('discountActive');
+        const discountDates = document.querySelector('.discount-dates');
+        const discountInputs = discountDates.querySelectorAll('input');
+        const discountInput = document.querySelector('input[name="discount"]');
+        
+        function toggleDiscountFields() {
+            const isActive = discountActive.checked;
+            if (isActive) {
+                discountDates.style.display = 'flex';
+                discountInputs.forEach(input => {
+                    input.required = true;
+                });
+                discountInput.required = true;
+            } else {
+                discountDates.style.display = 'none';
+                discountInputs.forEach(input => {
+                    input.required = false;
+                });
+                discountInput.required = false;
+            }
+        }
+        
+        // Initial state
+        toggleDiscountFields();
+        
+        // Handle changes
+        document.querySelectorAll('input[name="isDiscountActive"]').forEach(radio => {
+            radio.addEventListener('change', toggleDiscountFields);
+        });
+    }
+
+    // Validate discount dates
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (document.getElementById('discountActive').checked) {
+            const startDate = new Date(document.querySelector('input[name="discountStartDate"]').value);
+            const endDate = new Date(document.querySelector('input[name="discountEndDate"]').value);
+            const now = new Date();
+            
+            if (endDate <= startDate) {
+                e.preventDefault();
+                alert('Discount end date must be after start date');
+                return;
+            }
+        }
+    });
+
+    // Initialize discount form handling
+    document.addEventListener('DOMContentLoaded', handleDiscountForm);
     </script>
 </section>
 </body>
