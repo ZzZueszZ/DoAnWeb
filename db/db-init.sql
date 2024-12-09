@@ -1,5 +1,3 @@
--- Tắt kiểm tra khóa ngoại
-SET FOREIGN_KEY_CHECKS=0;
 
 -- Tạo cơ sở dữ liệu nếu chưa tồn tại
 CREATE DATABASE IF NOT EXISTS ecoommerce_store2 CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;

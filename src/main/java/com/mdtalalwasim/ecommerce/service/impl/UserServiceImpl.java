@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.StringUtils;
 
 import com.mdtalalwasim.ecommerce.entity.User;
 import com.mdtalalwasim.ecommerce.repository.UserRepository;
@@ -195,26 +196,42 @@ public class UserServiceImpl implements UserService{
 	@Override
 	@Transactional
 	public void changeProfilePicture(String email, MultipartFile file) throws IOException {
-		User user = getUserByEmail(email);
-		
-		String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-		Path uploadPath = Paths.get("uploads/profile/");
-		
-		if (!Files.exists(uploadPath)) {
-				Files.createDirectories(uploadPath);
-		}
+		try {
+			User user = getUserByEmail(email);
+			if (user == null) {
+				throw new RuntimeException("User not found");
+			}
 
-		try (InputStream inputStream = file.getInputStream()) {
-				Path filePath = uploadPath.resolve(fileName);
-				Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-				
-				if (user.getProfileImage() != null) {
-						Path oldFilePath = uploadPath.resolve(user.getProfileImage().substring("/uploads/profile/".length()));
-						Files.deleteIfExists(oldFilePath);
+			// Tạo thư mục uploads nếu chưa tồn tại
+			String uploadDir = "uploads/profile/";  // Sửa đường dẫn
+			Path uploadPath = Paths.get(uploadDir);
+			if (!Files.exists(uploadPath)) {
+				Files.createDirectories(uploadPath);
+			}
+
+			// Xóa ảnh cũ nếu có
+			if (user.getProfileImage() != null && !user.getProfileImage().equals("/uploads/profile/default.jpg")) {
+				try {
+					Path oldImagePath = Paths.get(user.getProfileImage().substring(1)); // Bỏ dấu / ở đầu
+					Files.deleteIfExists(oldImagePath);
+				} catch (IOException e) {
+					System.err.println("Could not delete old profile image: " + e.getMessage());
 				}
-				
-				user.setProfileImage("/uploads/profile/" + fileName);
-				userRepository.save(user);
+			}
+
+			// Tạo tên file mới với timestamp để tránh trùng
+			String fileName = System.currentTimeMillis() + "_" + StringUtils.cleanPath(file.getOriginalFilename());
+			Path targetLocation = uploadPath.resolve(fileName);
+
+			// Copy file mới vào thư mục đích
+			Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+			// Cập nhật đường dẫn trong database (thêm dấu / ở đầu cho đường dẫn web)
+			user.setProfileImage("/uploads/profile/" + fileName);
+			userRepository.save(user);
+
+		} catch (IOException e) {
+			throw new IOException("Could not store profile picture", e);
 		}
 	}
 
